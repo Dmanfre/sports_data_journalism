@@ -1,6 +1,7 @@
 ---
 title: "Women's Soccer Data"
 output: html_notebook
+name: Dylan Manfre
 ---
 
 We'll use this notebook to explore some NCAA women's soccer data and [our questions](https://docs.google.com/spreadsheets/d/1kTSrnl1URmcexIWLDMWqDnp3q-c2OS45uifnhjp10n4/edit#gid=0). First, let's load the tidyverse library:
@@ -27,9 +28,11 @@ Now, onto the questions using aggregates, which means `group_by` and `summarize`
 
 1. How many shots in total has Maryland attempted and how many have been on goal? Calculate a percentage of shots on goal.
 
+Maryland has attempted 164 shots and 46.9% of them have been shots on goal. 
+
 ```{r}
 matches_2022 %>% 
-#  filter(team == "Maryland Terrapins, Terps") %>% 
+  filter(team == "Maryland Terrapins, Terps") %>% 
   group_by(team) %>% 
   summarize(total_shots = sum(sh_att), total_quality_shots = sum(so_g)) %>% 
   mutate(percentage_quality_shots = (total_quality_shots/total_shots)*100) %>% 
@@ -52,16 +55,25 @@ matches_2021 %>%
 
 3. What about draws - Maryland started with 4 ties. Have any other teams had as many?
 
+Notes: Theres an error in this code. But I fixed it.
+
+63 teams have 4 ties.
+
+
 ```{r}
 matches_2022 %>% 
-  filter(result == "T") %>%
+  filter(outcome == "Draw") %>%
   group_by(team) %>%
   summarise(total_ties = n()) %>%
+  filter(total_ties == 4 ) %>% 
   arrange(desc(total_ties)) 
 ```
 
 
 4. How many total corner kicks has Maryland had so far and how many have its opponents have? Calculate the difference between the two totals for every team.
+
+Maryland has 79 corner kicks. It's opponents have 77.
+The code 
 
 ```{r}
 matches_2022 %>% 
