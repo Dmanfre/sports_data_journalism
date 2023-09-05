@@ -88,3 +88,11 @@ matches_2022 %>%
   mutate(difference = total_corners - opp_corners) %>% 
   arrange(desc(difference))
 ```
+
+```{r}
+
+
+
+
+```
+
