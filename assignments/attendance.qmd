@@ -1,0 +1,68 @@
+## NCAA Football Attendance 
+
+Let's load the tidyverse.
+
+```{r}
+library(tidyverse)
+```
+
+
+And read in the attendance data:
+
+```{r}
+attendance <- read_csv("https://dwillis.github.io/sports-data-files/attendance.csv")
+```
+
+Using the tidyverse's `pivot_longer` function, turn the currently wide data into longer data and save it as a new dataframe called `attendance_longer`:
+
+```{r}
+attendance_longer <- attendance %>% 
+pivot_longer(cols = starts_with("20"), names_to = "Year", values_to = "Attendance")
+
+#Result of this is more rows but it's longer.
+
+```
+
+Let's try to figure out whether football attendance has returned to "normal" by 2022, defining "normal" as 2019 figures. For that we'll need to isolate those two years using `filter()` and get rid of any NAs:
+
+```{r}
+attendance_two_years <- attendance_longer |> 
+filter(Year == 2019 | Year == 2022) %>% 
+na.omit()
+
+#has 256 teams with data in 2019 and 2022
+
+```
+
+Now, in order to calculate a percentage change between those two years, we'll need to go back to wider data and again ditch teams where we don't have both years:
+
+```{r}
+attendance_wide <- attendance_two_years |> 
+pivot_wider(names_from = Year, values_from = Attendance) %>% 
+na.omit()
+```
+
+Finally, we'll add a percentage change column to that dataframe (remember, it's (New-Old)/Old) and arrange it to see the results.
+
+```{r}
+attendance_wide <- attendance_wide |> 
+mutate(perc_change = (`2022`-`2019`)/`2019`*100) %>% 
+arrange(desc(perc_change))
+
+attendance_wide %>% 
+filter(Conference == "Pac-12")
+
+```
+
+Some of these clearly are influenced by performance on the field. Below, describe the most interesting results (positive or negative) and what you think might be going on with them. Feel free to do some googling and describe what other data would be helpful to clarify what the best stories here might be. What surprises you about these results?
+
+** Northwestern's attendance went down dramatically. With what has recently come out about the football scandal, I'm curoius if that played into it at all. I dont suspect this to be the case but I think it could relate in some way. I would like to know what the football culture is like at these smaller mid-major schools like those in C-USA. UTSA saw the highest growth among the schools but UTSA isn't a school we commonly know with college football. What does their program do that others dont?
+
+A story idea with relating to the Pac-12 collapse could be about its declining attendacne (See code above). Do school's in the Pac-12 want to jump ship to increase attendance at games. A majority of the schools in the conference saw declining attendacne from 2019 to 2022. From here you could map the declining team's attendacne to their new conference and see (when they eventually move) if their attendance jumps at all. 
+
+More data could be included such as campus populaton for the schools who grew their attendance. If that grew, it doesn't necessarilly correlate to those folks going to football games, but it could be telling about the number of students at games.
+
+
+
+
+
