@@ -15,6 +15,9 @@ We'll want to start with 2022 match data, which is located in [this GitHub repos
 
 ```{r}
 matches_2022 <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensSoccerData/main/data/ncaa_womens_soccer_matchstats_2022.csv")
+
+matches_2023 <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensSoccerData/main/data/ncaa_womens_soccer_matchstats_2023.csv")
+
 ```
 
 Let's take a look at this data to see what it contains, using `head` and `glimpse`:
@@ -87,6 +90,47 @@ matches_2022 %>%
   summarize(total_corners = sum(corners), opp_corners = sum(defensive_corners)) %>% 
   mutate(difference = total_corners - opp_corners) %>% 
   arrange(desc(difference))
+```
+
+## Significace Tests
+
+Hypothesis: There is more scoring in women's soccer this seaosn than last season.
+
+```{r}
+#Add a column to both data frames that contains the total goals for each match
+
+matches_2022 <- matches_2022 %>% 
+mutate(total_goals = goals + defensive_goals)
+
+matches_2023 <- matches_2023 %>% 
+mutate(total_goals = goals + defensive_goals)
+```
+
+Does the number of total goals on average, is it higher this year than last years?
+
+```{r}
+
+t.test(matches_2022$total_goals, matches_2023$total_goals)
+
+#there is a slight difference between 2022 (x) and 2023 (y) of about 0.3 goals per match and this is significant because it can.
+
+# Teams scored slightly more than the prior year in all games and its happened across the baord instead of a handful of games. 
+
+```
+```{r}
+
+#filtering 2022 to show only until today in 2023
+#This will show early part of the season to see if there is new scoring.
+
+matches_2022_early <- matches_2022 %>% 
+filter(date < "2022-09-14")
+
+t.test(matches_2022_early$total_goals, matches_2023$total_goals)
+
+#This shows that they are nearly the same but 2023 still has more goals.
+
+#During the early parts of 2023, teams scored more on average than they did a season ago. However, during the whole season, 2023 was on pace to otuscore 2022. This was happening across all teams during the 2023 seaosn. 
+
 ```
 
 ```{r}
