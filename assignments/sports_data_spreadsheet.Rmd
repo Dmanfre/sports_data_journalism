@@ -4,7 +4,28 @@ output: html_notebook
 ---
 
 ```{r}
+#libraries
+library(tidyverse)
+library(tidycensus)
+library(janitor)
+library(lubridate)
+#install.packages("ipumsr")
+library(ipumsr)
 
+
+
+```
+
+
+```{r}
+
+correlations <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensSoccerData/main/data/ncaa_womens_soccer_matchstats_2023.csv")
+
+
+
+```
+
+```{r}
 
 
 

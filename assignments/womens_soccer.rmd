@@ -133,10 +133,125 @@ t.test(matches_2022_early$total_goals, matches_2023$total_goals)
 
 ```
 
+
+*** Correlations Sections ***
+
 ```{r}
+
+correlations <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensSoccerData/main/data/ncaa_womens_soccer_matchstats_2023.csv")
+
+```
+
+```{r}
+# new correlations
+newcorrelations <- correlations %>% 
+mutate( differential = goals - defensive_goals)
+
+
+```
+
+```{r}
+#feeding cor( two different columsn and then telling cor the method we are using)
+
+newcorrelations %>% 
+summarise(correlation = cor(differential, fouls, method="pearson"))
+
+#On a scale of -1 to 1 the cor is 0.02622311
+# It's positive but very low. So 2.7% related to the positive.So basically this means they are unrealted.
+# It means that fouls dont make a difference in goal differential
 
 
 
 
 ```
+
+
+```{r}
+#Working with Yellow Cards
+
+# The order of the columns does not matter because it's just showing what you want to compare 
+
+newcorrelations %>% 
+  summarise(correlation = cor(differential, yellow_cards, method="pearson"))
+
+# This means that Yellow cards arent impacting if a team outscores another. 
+#One way to deal with it is to turn it around and say that there are other factors that are more consequential. 
+
+
+
+```
+
+Section on Regression
+
+```{r}
+# Here’s an example of using linear modeling to look at fouls. Think of the ~ character as saying “is predicted by”. The output looks like a lot, but what we need is a small part of it.
+
+#lm is a linear model
+# Says build a model saying how much do fouls peredict goal differential.
+
+fit <- lm(differential ~ fouls, data = newcorrelations)
+summary(fit)
+
+# Read starting from the bottom
+# Read p-value and then adjusted R-squared (a number that hasn't been multiplied by 100)
+# You want the adjusted R-squared value to be large. 
+
+
+
+#you use y=mx+b
+
+```
+
+```{r}
+#Working with an example that works
+#only cahnged fouls for so_g
+newcorrelations %>% 
+  summarise(correlation = cor(differential, so_g, method="pearson"))
+
+#Outputs 0.68... much closer to 1
+
+net <- lm(differential ~ so_g, data = newcorrelations)
+summary(net)
+
+```
+```{r}
+#taking the intercept coefficent
+
+(0.445467*11)+-2.530441 
+
+#y = 2.369696
+#This predicts that Maryland will win by 2 goals. 
+```
+
+playing around with coefficients
+
+```{r}
+
+correlations %>% 
+summarise(correlation = cor(saves, ga , method="pearson"))
+
+#comparing saves to goals allowed.... correlation is 0.3
+#This is close to one so that means saves and goals allowed do relate to each other at least a little bit. 
+
+saves_ga <- lm(saves ~ so_g, data = correlations)
+summary(saves_ga)
+
+#adjusted R value is 0.13
+
+# What we determine here is that there goals allowed and saves are somewhat related but it is not all that strong. 
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
