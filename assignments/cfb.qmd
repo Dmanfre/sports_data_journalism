@@ -1,0 +1,20 @@
+```{r}
+#load libraries
+library(tidyverse)
+library(cfbfastR)
+
+```
+
+```{r}
+
+Sys.setenv(CFBD_API_KEY = "YG3BnH+G9FNPRxeI+k6t6BjTktLrqqQITj90Rkuw1f6Dt9rL54jczqxjg8rGA3Sj")
+
+
+```
+
+```{r}
+
+
+
+```
+
