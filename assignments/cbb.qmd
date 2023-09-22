@@ -1,0 +1,147 @@
+```{r}
+#loading libraries
+
+library(tidyverse)
+library(Hmisc)
+```
+
+```{r}
+
+#loading data
+logs <- read_csv("https://dwillis.github.io/sports-data-files/cbblogs1523.csv")
+
+ß
+
+```
+
+```{r}
+#build a model to see if we can determine score differential between two teams
+
+logs <- logs %>% 
+  mutate( Differential = TeamScore - OpponentScore, 
+          NetRebounds = TeamTotalRebounds - OpponentTotalRebounds,
+          TurnoverMargin = TeamTurnovers - OpponentTurnovers)
+
+
+
+```
+
+```{r}
+
+rebounds <- lm(Differential ~ NetRebounds, data=logs)
+summary(rebounds)
+
+# The p value is very low, and the r squared value is cloesr to 0, There is a relationship but the correlation is not strong because the r-squared value. Essentially what this says is that net rebounds does not determine the predictability the point differential of a game. 
+
+```
+
+```{r}
+#This means we ned to add more to our model
+
+rebounds_turnovers <- lm(Differential ~ NetRebounds + TurnoverMargin, data=logs)
+summary(rebounds_turnovers)
+
+# The R-Squared is much closer to 1 which means that there is a much stronger correlation.
+#The P-value is still very small
+# Knowing net rebound and trunover margin gets is over 50% in predicibility power.
+
+# Residual standard error: the smaller the number is the better the model is. This produces 10.29 which is low and means we are doing the right thing. 
+
+# Can this be improved by adding something else?
+
+rebounds_turnovers <- lm(Differential ~ NetRebounds + TurnoverMargin, data=logs)
+summary(rebounds_turnovers)
+
+```
+
+```{r}
+#Hmis library shows you what to put into the model and what you should not put into the model. 
+
+simplelogs <- logs %>% 
+  select_if(is.numeric) %>% 
+  select(-Game) %>% 
+  select(Differential, NetRebounds, TurnoverMargin, TeamFGPCT, TeamTotalRebounds, OpponentFGPCT, OpponentTotalRebounds)
+
+
+summary(simplelogs)
+
+# Ask the model to build a model showing how each variable is related to each other. 
+
+cormatrix <- rcorr(as.matrix(simplelogs))
+
+cormatrix$r
+#This matrix compares each of the variables against itself.
+# The way we should be looking at this is the following: theyre between -1 and 1. 1= perfect positive correlation and -1 is a perfect negative correlation
+#We want to take a positive correlation but is not related... answer is TeamFGPCT when correlating to Differential.
+# You would also include OpponentFGPCT here becasue that is also not related to differential
+```
+
+```{r}
+
+model2 <- lm(Differential ~ NetRebounds + TurnoverMargin + TeamFGPCT + OpponentFGPCT, data=logs)
+summary(model2)
+
+# This code block shows us a certain degree of confidence in an outcome of a game.
+# The p value is low, R Squared is 0.89 
+
+```
+
+
+
+```{r}
+# Saying these teams: on average how did they do? on average how did they do in these categories?
+
+logs |> 
+  filter(Team == "Michigan" & Season == '2020-2021' | Team == "Wisconsin" & Season == '2019-2020' | Team == "Michigan State" & Season == '2018-2019' | Team == "Michigan State" & Season == '2017-2018' | Team == 'Illinois' & Season == '2021-2022' | Team == 'Purdue' & Season == '2022-2023') |> 
+  summarise(
+    meanNetRebounds = mean(NetRebounds),
+    meanTurnoverMargin = mean(TurnoverMargin),
+    meanTeamFGPCT = mean(TeamFGPCT),
+    meanOpponentFGPCT = mean(OpponentFGPCT)
+  )
+
+#Now we plug them into the model, is the following 
+
+# (netrebounds estimate * meanNetRebounds) + (turnover margin estimate * meanTurnoverMargin) + (TeamFGPCT estimate * meanTeamFGPCT) + (OpponentFGPCT estimate * meanOpponentFGPCT) + Intercept
+(0.654800*6.05) + (-1.310579*0.6333333) + (90.805990*0.4543167) + (-91.351310*0.4107167) + 0.287665
+
+#this uses the y=mx+b model
+#They should outscore their opponents by 7.154341 points per game over the course of a season.
+
+
+
+#How does this compare to Maryland in the previous seaosn
+
+logs |> 
+  filter(
+    Team == "Maryland" & Season == '2022-2023'
+    ) |> 
+  summarise(
+    meanNetRebounds = mean(NetRebounds),
+    meanTurnoverMargin = mean(TurnoverMargin),
+    meanTeamFGPCT = mean(TeamFGPCT),
+    meanOpponentFGPCT = mean(OpponentFGPCT)
+  )
+#This says Maryland should slightly outrebound opponents
+
+
+
+#using this equation to predict scoring. 
+(0.654800*1.685714) + (-1.310579*0.9142857) + (90.805990*0.4517714) + (-91.351310*0.428) + 0.287665
+#This says we should outscore out oppoenents by 2.118415
+
+logs |> 
+     filter(
+         Team == "Maryland" & Season == '2022-2023'
+     ) |> summarise(avg_score = mean(TeamScore), avg_opp = mean(OpponentScore))
+
+# Maryland actually outscored its opponents by 6 points. 
+
+
+
+
+
+
+
+```
+
