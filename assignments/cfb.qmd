@@ -77,24 +77,64 @@ The p-value is 0.0158 or 2%. This is low but not as low as we have seen before i
 
 
 ```
-
-```{r}
-
 Next, create a multiple regression model following the examples in this chapter Links to an external site..
 
 Instead of using the number of penalties alone, combine other numeric columns that describe mistakes/bad outcomes to try and predict the score differential with a higher degree of confidence. 
 
 Look at the same values in the results you did before, but also take into account the residual standard error and the risk of multicollinearity - are you adding columns that explain each other instead of the differential? Below this code block, explain your choices and what you think the results say.
 
+```{r}
 
-model2 <- lm(differential ~ + Penalties + FirstDownPen + Interceptions + Fumbles, data=logs)
+
+
+
+model2 <- lm(differential ~ DefYards + OffenseAvg + OffensiveYards, data=logs)
 summary(model2)
 
+
+
 ## Struggled a bit with this question. Is this a question where we would create a martrix?
+
+#The code I went with tries to balance out things from both sides of the ball. I'm sure there is a combination that produces a lower standard error score which would make a stronger relationship but getting it to a 12 down from 22 is good in my book. It also produced a high R-squared closer to 1 which means that there is something correlated about these figures in determining the point differental of a game. 
+
+
+```
+Finally, use filter to narrow the game data so that you're only working with games that are close (you'll need to define what "close" means). Are your simple or multiple regression models better? Worse? Below this code block, explain your choices and what you think the results say.
+
+At the end of all that code, summarize what you've learned about the relationship between penalties and point differential and whether you think there's a story there, whether it's useful in adding context within a larger story, or something else. Would you use this in journalism and, if so, how?
+
+The goal of this exercise is not that you all will come up with the same approach - I hope that doesn't happen - but to get you to think about ways you could measure an outcome and test what influences it. A crucial part of that is to have you write out your thoughts and reactions, so don't skimp on that part.
+
+Make sure to save your work and push the cfb.rmd notebook to GitHub, then submit the link in ELMS.
+
+```{r}
+logs %>% 
+  group_by(differential) %>% 
+  count() %>% 
+  arrange(desc(differential))
+
+  
+  #Going to define a close game as anything under 7 points. So I should create a filter to only show me the games with a score differential of 7 or less.
+
+less_seven <- logs %>% 
+filter(differential < 7) %>% 
+arrange(desc(differential))
+  
+#setting up new model
+```
+
+
+```{r}
+
+model3 <- lm(formula = differential ~ DefYards + OffenseAvg + OffensiveYards, 
+    data = less_seven)
+summary(model3)
+
+#This gave me a very low residual standard of error score but a lower R-squared score as well. What this tells me is that maybe the factors I chose work well in games with a higher differential than those with a lower one. I also think that there is more of a situational relationship here that theres a stronger correlation wtih higher point differentials rather than in close games. Would this mean that penalties don't always influence the point differentials of close games?
+
 
 
 
 
 ```
-
 
