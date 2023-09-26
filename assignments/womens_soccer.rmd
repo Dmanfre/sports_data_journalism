@@ -244,15 +244,52 @@ summary(saves_ga)
 
 
 
+Working with models and our women's soccer data from Sept. 28
+
+Frustration Model
+```{r}
+
+matches_2023 <- matches_2023 %>% 
+mutate(differential = team_score - opponent_score)
+
+```
+
+Team shots on goal and defensive shots on goal model
+Can I predict differential if I know my shots on goal and our opponents shots on goal
+```{r}
+fit2 <- lm(differential ~ so_g + defensive_so_g, data = matches_2023)
+summary(fit2)
+```
+The residuals are tight. lowest is -7 and highest is almost +7. We wouldnt expect it to be very out of wack but it's good that it's not crazy. Accept this as a good model. We now want to find matches where Maryland should have won but it didn't
+
+The residual is the difference predicted and the actual. 
+And the lower residual means the model was more accurate. 
+```{r}
+matches_2023 <- matches_2023 %>% 
+mutate(predicted_differential = predict(fit2), 
+        residuals = residuals(fit2))
+
+big_ten = c('Wisconsin Badgers', 'Maryland Terrapins, Terps', 'Michigan Wolverines', 'Rutgers Scarlet Knights', 'Indiana Hoosiers', 'Iowa Hawkeyes', 'Penn St. Nittany Lions', 'Minnesota Golden Gophers', 'Illinois Fighting Illini', 'Ohio St. Buckeyes', 'Northwestern Wildcats', 'Michigan St. Spartans', 'Purdue Boilermakers')
+
+```
+
+Give me all the matches where residual is smallest
+```{r}
+matches_2023 %>%  
+  arrange(residuals) %>% 
+  select(date, team, opponent, home_away, outcome, team_score, opponent_score, so_g, defensive_so_g, differential, predicted_differential, residuals)
 
 
+```
 
-
-
-
-
-
-
+Close games in the Big Ten that were draws where the residuals were smallest. 
+For Maryland, 4 of the 5 draws this seaosn were games they could have won. 
+```{r}
+matches_2023 |> 
+filter(team %in% big_ten, outcome == 'Draw') |>  
+arrange(residuals) |> 
+select(date, team, opponent, home_away, outcome, team_score, opponent_score, so_g, defensive_so_g, predicted, residuals)
+```
 
 
 

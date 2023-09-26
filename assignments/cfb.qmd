@@ -56,24 +56,24 @@ Make sure to save your work and push the cfb.rmd notebook to GitHub, then submit
 
 
 ```{r}
-Create a new column for point differential between the TeamScore and OpponentScore using mutate. You can use the same `logs` variable.
+#Create a new column for point differential between the TeamScore and OpponentScore using mutate. You can use the same `logs` variable.
 
 logs <- logs %>% 
-mutate(differential = TeamScore - OpponentScore )
+mutate(differential = abs(TeamScore - OpponentScore))
 
 ```
 
 ```{r}
-Create a regression (a linear model, like we did in this chapter Links to an external site.) investigating whether the number of penalties can predict the score differential. 
+#Create a regression (a linear model, like we did in this chapter Links to an external site.) investigating whether the number of penalties can predict the score differential. 
 
 model1 <- lm(differential ~ Penalties, data=logs)
 summary(model1)
 
 # I kept getting an error saying invalid langugae so I used ChatGPT to tell me that what I was doing wrong was originally writing the code like this model1 <- logs %>% lm(differential ~ Penalties, data=logs) summary(model1)... the error was that I did not need the first logs. I only needed to set the data equal to logs.
 
-In a paragraph below this code block, describe the results: what is the p-value, and does it mean the results are random? Using the r-squared value, how much of the differential can be explained by penalty yards? How useful is this regression?
+#In a paragraph below this code block, describe the results: what is the p-value, and does it mean the results are random? Using the r-squared value, how much of the differential can be explained by penalty yards? How useful is this regression?
   
-The p-value is 0.0158 or 2%. This is low but not as low as we have seen before in other examples. The R-Squared value is close to 0 which means there is not much of a correlation to this data. The regression is not successful because there is a very high Risidual Standard of Error in the 20s. I think you go off the R value when you say that less than 1% of the value can be explained by the penalty yards. 
+#The p-value is 0.0158 or 2%. This is low but not as low as we have seen before in other examples. The R-Squared value is close to 0 which means there is not much of a correlation to this data. The regression is not successful because there is a very high Risidual Standard of Error in the 20s. I think you go off the R value when you say that less than 1% of the value can be explained by the penalty yards. 
 
 
 ```

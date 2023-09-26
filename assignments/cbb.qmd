@@ -10,7 +10,6 @@ library(Hmisc)
 #loading data
 logs <- read_csv("https://dwillis.github.io/sports-data-files/cbblogs1523.csv")
 
-ß
 
 ```
 
@@ -138,10 +137,48 @@ logs |>
 # Maryland actually outscored its opponents by 6 points. 
 
 
+```
 
 
+Residual lessons from Sept. 28
+
+
+```{r}
+
+residualmodel <- logs |> mutate(differential = TeamScore - OpponentScore, FGPctMargin = TeamFGPCT - OpponentFGPCT)
+
+fit <- lm(differential ~ FGPctMargin, data = residualmodel)
+summary(fit)
+
+```
+This is a pretty predictive model becasue its saying you have a better chance of winning if you shoot better.
+Looking at the residuals: There is a range of them from smallest to largest value
+
+Residuals are the difference between the prediction and what actually happened. 
+
+```{r}
+residualmodel <- residualmodel %>% na.omit()
+
+residualmodel <- residualmodel |> mutate(predicted = predict(fit), residuals = residuals(fit))
+
+#This filters out all the ones where the FGP is
+residualmodel <- residualmodel |> filter(!is.na(FGPctMargin))
+
+```
+
+
+
+
+```{r}
 
 
 
 ```
+
+
+
+
+
+
+
 
