@@ -167,18 +167,90 @@ residualmodel <- residualmodel |> filter(!is.na(FGPctMargin))
 ```
 
 
+Working with Z - Scores from Sept. 28
 
+z scores show a team or player is better than their opponents or peers. 
+Be careful using one sesaon... make sure to try and use multiple seasons. 
+
+Create the average first and then do the Z score. ORDER MATTERS. 
 
 ```{r}
 
+gamelogs <- read_csv("https://dwillis.github.io/sports-data-files/wbblogs23.csv")
 
+```
+
+```{r}
+#Chose these becasue that is what Derek defines as "quality"
+teamquality <- gamelogs |> 
+  select(Conference, Team, TeamFGPCT, TeamTotalRebounds, OpponentFGPCT, OpponentTotalRebounds)
+
+```
+
+
+```{r}
+#Calculating averages
+
+teamtotals <- teamquality |> 
+  group_by(Conference, Team) |> 
+  summarise(
+    FGAvg = mean(TeamFGPCT), 
+    ReboundAvg = mean(TeamTotalRebounds), 
+    OppFGAvg = mean(OpponentFGPCT),
+    OppRebAvg = mean(OpponentTotalRebounds)
+    ) 
+
+```
+
+z scores calculate the number of standard deviations from the mean. 
+Negatives numbers mean they are X standard deviations below the average.
+```{r}
+teamzscore <- teamtotals |> 
+  mutate(
+    FGzscore = as.numeric(scale(FGAvg, center = TRUE, scale = TRUE)),
+    RebZscore = as.numeric(scale(ReboundAvg, center = TRUE, scale = TRUE)),
+    OppZscore = as.numeric(scale(OppFGAvg, center = TRUE, scale = TRUE)) * -1,
+    OppRebZScore = as.numeric(scale(OppRebAvg, center = TRUE, scale = TRUE)) * -1,
+    TotalZscore = FGzscore + RebZscore + OppZscore + OppRebZScore
+  )  
+
+# showing the best TeamScore team
+teamzscore |> arrange(desc(TotalZscore))
+```
+
+
+Picking metrics matters here becuase Maryland is low but its because they didnt rebound.... the RebPerc hurt them in this metric. 
+
+MSU being at 0.0 menas they are at average among the Big Ten in those metrics. 
+```{r}
+#Filtering just the Big Ten
+
+teamzscore |> 
+  filter(Conference == "MAAC WBB") |> 
+  arrange(desc(TotalZscore)) |>
+  select(Team, TotalZscore)
 
 ```
 
 
 
+```{r}
+#Limiting the conference to the P5 and The Big East
+powerfive_plus_one <- c("SEC WBB", "Big Ten WBB", "Pac-12 WBB", "Big 12 WBB", "ACC WBB", "Big East WBB")
+teamzscore |> 
+  filter(Conference %in% powerfive_plus_one) |> 
+  arrange(desc(TotalZscore)) |>
+  select(Team, TotalZscore)
 
 
 
+#just becasue
+powerfive_plus_maac_beast <- c("SEC WBB", "Big Ten WBB", "Pac-12 WBB", "Big 12 WBB", "ACC WBB", "Big East WBB", "MAAC WBB")
+teamzscore |> 
+  filter(Conference %in% powerfive_plus_maac_beast) |> 
+  arrange(desc(TotalZscore)) |>
+  select(Team, TotalZscore)
+
+```
 
 
