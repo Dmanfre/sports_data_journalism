@@ -120,3 +120,5 @@ WIthout properly figuring out the issue with the group_by(team), a comprehensive
 
 When I use attempw 2 on team_avgs, it geerates 340 rows which shows me that something at least worked in teh group_by. 
 
+The code process seems to be correct for creating the z-scores and I understand how it should eb structured and what the steps are since I followed the tutorials. 
+
