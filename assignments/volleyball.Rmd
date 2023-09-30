@@ -113,6 +113,10 @@ filter(team == "Maryland Terrapins, Terps")
 
 It just seems like my group_by isnt working. Running attempt 1 gives me a z-score column but attempt 2 of team_avgs does not. 
 
+Analysis
+- When I used attempt 2, NC State was high up in the total z-scores which tells me they are really good. They are 12-2 this season but in 2021, they finished 16-13. Not the bst record. IT suggested that maybe these metrics I chose aren't the strongest to measure a team by.
 
+WIthout properly figuring out the issue with the group_by(team), a comprehensive analysis cannot be performed. I've used ChatGPT and Google to try and figuee out what the issue is as sghown in the copied prompts above. 
 
+When I use attempw 2 on team_avgs, it geerates 340 rows which shows me that something at least worked in teh group_by. 
 
