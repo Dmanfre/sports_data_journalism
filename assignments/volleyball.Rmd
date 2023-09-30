@@ -10,20 +10,109 @@ library(tidyverse)
 teams <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensVolleyballData/main/data/ncaa_womens_volleyball_matchstats_2021.csv")
 ```
 
+Establishing averages based on metrics that I choose.
+
 ```{r}
 
+#attempt 1
 team_avgs <- teams %>% 
   group_by(team) %>% 
   summarize(
-            kills_avg = mean(kills),
-            aces_avg = mean(aces),
-            digs_avg = mean(digs),
-            def_kill_avg = mean(defensive_kills),
-            error_avg = mean(errors),
-            hit_perc_avg = mean(hit_pct),
-            service_error_avg = mean(s_err)) %>% 
-  select(team, kills_avg, aces_avg, digs_avg, def_kill_avg, error_avg, hit_perc_avg, service_error_avg)
+            killsperset = kills/s,
+            acesperset = aces/s,
+            digsperset = digs/s,
+            def_kill_perset = defensive_kills/s,
+            error_perset = errors/s,
+            hit_perc_perset = hit_pct/s,
+            service_error_perset = s_err/s) %>% 
+  select(team, killsperset, acesperset, digsperset, def_kill_perset, error_perset, hit_perc_perset, service_error_perset) %>% 
+   ungroup()
 
+view(team_avgs)
 
 ```
+When running: lead teams first then do attempt 1 and then jump down to vbzscores.... on the second attempt, start over and run attempt 2 and then jump to vbzscores. 
+
+
+Attempting to fix the issue with teams
+
+My prompt for ChatGPT: When I run this code team_avgs <- teams %>% 
+  group_by(team) %>% 
+  summarize(
+            killsperset = kills/s,
+            acesperset = aces/s,
+            digsperset = digs/s,
+            def_kill_perset = defensive_kills/s,
+            error_perset = errors/s,
+            hit_perc_perset = hit_pct/s,
+            service_error_perset = s_err/s) %>% 
+  select(team, killsperset, acesperset, digsperset, def_kill_perset, error_perset, hit_perc_perset, service_error_perset) I still see multiple teams in the team column. The team is next to a date column which has each match from the 2021 volleyball season. I want to only see one team per row. when I run this code. What am I doing wrong and show me the code to fix this
+
+Establishing averages based on metrics that I choose. 
+```{r}
+#attempt 2 using ChatGPT's code this time with the sums
+
+team_avgs <- teams %>% 
+  group_by(team) %>%
+  summarize(
+    killsperset = sum(kills) / sum(s),
+    acesperset = sum(aces) / sum(s),
+    digsperset = sum(digs) / sum(s),
+    def_kill_perset = sum(defensive_kills) / sum(s),
+    error_perset = sum(errors) / sum(s),
+    hit_perc_perset = sum(hit_pct) / sum(s),
+    service_error_perset = sum(s_err) / sum(s)
+  ) %>%
+  ungroup()
+
+view(team_avgs)
+
+#This now works and shows me each team as a single line which is what I wanted originally. The differnece is that it takes sum(kills)/sum(sets) which is different from how the tutorial showed it. 
+
+```
+
+creating the z scores
+```{r}
+vbzscore <- team_avgs %>% 
+  group_by(team) %>% 
+  mutate(
+    killszscore = as.numeric(scale(killsperset, center = TRUE, scale = TRUE)),
+    aceszscore = as.numeric(scale(acesperset, center = TRUE, scale = TRUE)),
+    digszscore = as.numeric(scale(digsperset, center = TRUE, scale = TRUE)),
+    defkillzscore = as.numeric(scale(def_kill_perset, center = TRUE, scale = TRUE)),
+    errorzscore = as.numeric(scale(error_perset, center = TRUE, scale = TRUE)),
+    hit_perc_zscore = as.numeric(scale(hit_perc_perset, center = TRUE, scale = TRUE)),
+    service_error_zscore = as.numeric(scale(service_error_perset, center = TRUE, scale = TRUE)),
+    TotalZscore = killszscore + aceszscore + digszscore + defkillzscore + errorzscore + hit_perc_zscore + service_error_zscore)
+
+
+view(vbzscore)
+```
+
+it doesn't seem like the group_by worked because all the team names are still showing. Is this supposed to happen?
+
+#First attempt at running this produces the zscore columns but they were all populated with NaNs
+#Pasted this prompt to ChatGPT: I wrote this code to create columns of Z scores and then a total z score at the end. The result was that the columns showed up but were populated with NaN. Explain why this happened and how to correct it.
+
+_______
+
+Second attempt at this was done after changing the team_avgs dataframe to per set to match the tutorial instead of taking the mean of each category
+
+```{r}
+
+just_zscore <- vbzscore %>%
+select(team, killszscore, aceszscore, digszscore, defkillzscore, errorzscore, hit_perc_zscore, service_error_zscore, TotalZscore)
+
+#big_ten = c('Wisconsin Badgers', 'Maryland Terrapins, Terps', 'Michigan Wolverines', 'Rutgers Scarlet Knights', 'Indiana Hoosiers', 'Iowa Hawkeyes', 'Penn St. Nittany Lions', 'Minnesota Golden Gophers', 'Illinois Fighting Illini', 'Ohio St. Buckeyes', 'Northwestern Wildcats', 'Michigan St. Spartans', 'Purdue Boilermakers')
+
+just_zscore %>% 
+filter(team == "Maryland Terrapins, Terps")
+```
+
+#Question: Why do teams show up two or three times in this dataset? Is it becasue the teams dataset shows every game for every team? Wouldn't the group_by(team) function solve that?
+
+It just seems like my group_by isnt working. Running attempt 1 gives me a z-score column but attempt 2 of team_avgs does not. 
+
+
+
 
