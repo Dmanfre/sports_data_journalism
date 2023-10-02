@@ -25,8 +25,7 @@ team_avgs <- teams %>%
             error_perset = errors/s,
             hit_perc_perset = hit_pct/s,
             service_error_perset = s_err/s) %>% 
-  select(team, killsperset, acesperset, digsperset, def_kill_perset, error_perset, hit_perc_perset, service_error_perset) %>% 
-   ungroup()
+  select(team, killsperset, acesperset, digsperset, def_kill_perset, error_perset, hit_perc_perset, service_error_perset)
 
 view(team_avgs)
 
@@ -62,8 +61,7 @@ team_avgs <- teams %>%
     error_perset = sum(errors) / sum(s),
     hit_perc_perset = sum(hit_pct) / sum(s),
     service_error_perset = sum(s_err) / sum(s)
-  ) %>%
-  ungroup()
+  )
 
 view(team_avgs)
 
@@ -102,6 +100,8 @@ Second attempt at this was done after changing the team_avgs dataframe to per se
 
 just_zscore <- vbzscore %>%
 select(team, killszscore, aceszscore, digszscore, defkillzscore, errorzscore, hit_perc_zscore, service_error_zscore, TotalZscore)
+
+view(just_zscore)
 
 #big_ten = c('Wisconsin Badgers', 'Maryland Terrapins, Terps', 'Michigan Wolverines', 'Rutgers Scarlet Knights', 'Indiana Hoosiers', 'Iowa Hawkeyes', 'Penn St. Nittany Lions', 'Minnesota Golden Gophers', 'Illinois Fighting Illini', 'Ohio St. Buckeyes', 'Northwestern Wildcats', 'Michigan St. Spartans', 'Purdue Boilermakers')
 
