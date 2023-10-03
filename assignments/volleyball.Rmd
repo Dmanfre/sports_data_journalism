@@ -7,7 +7,7 @@ library(tidyverse)
 
 ```{r}
 #loading data
-teams <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensVolleyballData/main/data/ncaa_womens_volleyball_matchstats_2021.csv")
+teams <- read_csv("https://raw.githubusercontent.com/dwillis/NCAAWomensVolleyballData/main/data/ncaa_womens_volleyball_matchstats_2023.csv")
 ```
 
 Establishing averages based on metrics that I choose.
@@ -55,13 +55,8 @@ team_avgs <- teams %>%
   group_by(team) %>%
   summarize(
     killsperset = sum(kills) / sum(s),
-    acesperset = sum(aces) / sum(s),
     digsperset = sum(digs) / sum(s),
-    def_kill_perset = sum(defensive_kills) / sum(s),
-    error_perset = sum(errors) / sum(s),
-    hit_perc_perset = sum(hit_pct) / sum(s),
-    service_error_perset = sum(s_err) / sum(s)
-  )
+    hit_perc_perset = sum(hit_pct) / sum(s))
 
 view(team_avgs)
 
@@ -71,21 +66,20 @@ view(team_avgs)
 
 creating the z scores
 ```{r}
-vbzscore <- team_avgs %>% 
-  group_by(team) %>% 
+vbzscore <- team_avgs %>%
   mutate(
     killszscore = as.numeric(scale(killsperset, center = TRUE, scale = TRUE)),
-    aceszscore = as.numeric(scale(acesperset, center = TRUE, scale = TRUE)),
     digszscore = as.numeric(scale(digsperset, center = TRUE, scale = TRUE)),
-    defkillzscore = as.numeric(scale(def_kill_perset, center = TRUE, scale = TRUE)),
-    errorzscore = as.numeric(scale(error_perset, center = TRUE, scale = TRUE)),
     hit_perc_zscore = as.numeric(scale(hit_perc_perset, center = TRUE, scale = TRUE)),
-    service_error_zscore = as.numeric(scale(service_error_perset, center = TRUE, scale = TRUE)),
-    TotalZscore = killszscore + aceszscore + digszscore + defkillzscore + errorzscore + hit_perc_zscore + service_error_zscore)
+    TotalZscore = killszscore + digszscore + hit_perc_zscore)
 
 
 view(vbzscore)
 ```
+
+class thoughts on the above code
+- Teams being so high up 
+
 
 it doesn't seem like the group_by worked because all the team names are still showing. Is this supposed to happen?
 
@@ -121,4 +115,17 @@ WIthout properly figuring out the issue with the group_by(team), a comprehensive
 When I use attempw 2 on team_avgs, it geerates 340 rows which shows me that something at least worked in teh group_by. 
 
 The code process seems to be correct for creating the z-scores and I understand how it should eb structured and what the steps are since I followed the tutorials. 
+________________
+
+z scores help you explain a team's excellence. 
+
+_______________
+
+Western Kentucky is a volleyball machine and its hitting percentage is well above average. The program has lost a combined 10 games over the last three seasons and made the second round of the NCAA in each of them.
+
+It averages just over 13 kills per set and allows a touch over 11 and it has done so against some of the nation's top teams such as Kentucky and Notre Dame.
+
+Many of its wins have come in straight sets showing that Western Kentucky has dominated its opponents. 
+
+
 
