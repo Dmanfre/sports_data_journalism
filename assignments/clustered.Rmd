@@ -1,0 +1,33 @@
+```{r}
+library(tidyverse)
+install.packages("cluster")
+library(cluster)
+
+set.seed(1234)
+```
+
+Notes
+- Clusteres are a distance from the mean.
+- Trick with clustering is that it ONLY works for numeric columns
+- Scale creates a best to worst and we do this in order to calculate the clusteres
+Difference between z score and cluster is that we need to make decisios about how many clusteres we want to create. 
+
+This will help you find out who you might want to write about. 
+
+Elbow Method
+- Shows the number of clusters it could create
+- Want to choose the number of clusters where the line begins to flatten out. 
+- Plug in the number into the formula
+- 0 means average, positive numbers mean above average and negative numebrs mean below average.
+
+
+Clustering helps ID what players or teams strengths are and what their peers 
+Clusting helps identify WHO you want to compare player X to. 
+
+
+```{r}
+
+wbb <-  read_csv
+
+```
+
