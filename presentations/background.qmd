@@ -1,0 +1,44 @@
+---
+title: "background.qmd"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+Story idea: I will be doing story idea No. 1 about whether having a good assist-to-turnover ratio actually leads to more wins.
+
+Questions in Canvas assignment
+
+1) Does that data already exist? Can you get it?
+2) Do you need assistance in getting it?
+3) What time frame do you want/need data from?
+4) Will you have to improve or augment the data in order to answer your question? If so, how?
+5) Are there other examples of this kind of work (specific or general)? If so, provide them.
+
+Response
+1) The data does exist. I can use box score data and game logs from women's college basketball games. I believe I can get this through the sportsdataverse or a wehoops R package which already has the data inside of it.
+2) I may need a little assistace getting the data because there will likely be multiple files that are similar but finding the right one for this analysis is essential to the project.
+3) I would like to use data from last season 2022-23. I think this would be a good time frame to use because Brenda Frese talked about how having an assist-to-turnover ratio was essential to the team's success. I'm wondering if a text analysis could be a good part of this project to see exactly how many times she said the phrase "assist-to-turnover" ratio last season.
+4) I don't believe there will be too much to agument. Unless the dataset does not already have an assist-to-turnover ratio column. If that is not there, I would need to create it by doing a mutate(ATo_ratio = sum(assits) / sum(Turnovers) * 100). Then I would need to calculate a linear model and 
+5) Haven't found many articles outlining an analysis in the form of a narrative story but there have been smaller articles. 
+https://statathlon.com/team_stats_analysing_impact/#:~:text=That%20the%20assist%20to%20turnover,is%20not%20always%20the%20rule.
+
+```{r}
+#libraries
+library(tidyverse)
+install.packages("wehoop")
+library(wehoop)
+
+
+
+```
+
+```{r}
+# reading in data
+
+
+```
+
