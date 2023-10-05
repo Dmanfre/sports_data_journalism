@@ -31,6 +31,7 @@ https://statathlon.com/team_stats_analysing_impact/#:~:text=That%20the%20assist%
 library(tidyverse)
 install.packages("wehoop")
 library(wehoop)
+library(tictoc)
 
 
 
@@ -38,6 +39,12 @@ library(wehoop)
 
 ```{r}
 # reading in data
+
+tictoc::tic()
+progressr::with_progress({
+  wbb_pbp <- wehoop::load_wbb_pbp(seasons = c(2023))
+})
+tictoc::toc()
 
 
 ```
