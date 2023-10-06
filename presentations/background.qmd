@@ -2,6 +2,7 @@
 title: "background.qmd"
 format: html
 editor: visual
+name: Dylan Manfre
 ---
 
 ## Quarto
