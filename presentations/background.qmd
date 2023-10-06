@@ -9,7 +9,7 @@ name: Dylan Manfre
 
 Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
 
-Story idea: I will be doing story idea No. 1 about whether having a good assist-to-turnover ratio actually leads to more wins.
+Story idea: I will be doing story idea No. 1 about whether having a good assist-to-turnover ratio actually leads to more wins and analyzing if it is a good measure of team success.
 
 Questions in Canvas assignment
 
@@ -64,6 +64,7 @@ wbb_box_23 %>%
 wbb_box_23 %>% 
 mutate( Team_AToR = (TeamAssists) / (TeamTurnovers),
         Opp_AToR = (OpponentAssists) / (OpponentTurnovers)) %>% 
+filter(TeamFull == "Maryland Terrapins") %>% 
 select(Game, Date, TeamFull, Opponent, HomeAway, W_L, TeamScore, OpponentScore, TeamAssists, OpponentAssists, TeamTurnovers, OpponentTurnovers, Team_AToR,   Opp_AToR)
 
 ```
