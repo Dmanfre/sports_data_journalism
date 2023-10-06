@@ -269,7 +269,6 @@ wbb_rosters23 <- subset(wbb_rosters23, select = -c(temp) )
 
 # Data Exploration Section
 
-
 #Which teams/conferences/divisions have the most first-year players? Which have the most seniors & graduate students?
 
 ```{r}

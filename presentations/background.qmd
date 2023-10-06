@@ -29,24 +29,49 @@ https://statathlon.com/team_stats_analysing_impact/#:~:text=That%20the%20assist%
 ```{r}
 #libraries
 library(tidyverse)
-install.packages("wehoop")
+#install.packages("wehoop")
 library(wehoop)
 library(tictoc)
+```
 
+Not sure which to use
+```{r}
+#This is from the textbook
 
+wbb_box_23 <- read_csv("https://dwillis.github.io/sports-data-files/wbblogs23.csv")
 
 ```
 
 ```{r}
-# reading in data
 
-tictoc::tic()
-progressr::with_progress({
-  wbb_pbp <- wehoop::load_wbb_pbp(seasons = c(2023))
-})
-tictoc::toc()
+#need to load in box score data and not pbp. 
 
-#need to load in box score data. 
+team_box_2022 <- load_wbb_team_box(seasons = 2022)
 
 ```
+
+
+Data exploration: Creating an assist-to-turnover ratio
+```{r}
+# This would generate a team and opponent's AstToR for the season
+wbb_box_23 %>%
+  group_by(TeamFull) %>% 
+  summarize(Team_AstToR = sum(TeamAssists) / sum(TeamTurnovers),
+            Opp_AstTor = sum(OpponentAssists) / sum (OpponentTurnovers))
+
+#This should give team's AToR in each game
+wbb_box_23 %>% 
+mutate( Team_AToR = (TeamAssists) / (TeamTurnovers),
+        Opp_AToR = (OpponentAssists) / (OpponentTurnovers)) %>% 
+select(Game, Date, TeamFull, Opponent, HomeAway, W_L, TeamScore, OpponentScore, TeamAssists, OpponentAssists, TeamTurnovers, OpponentTurnovers, Team_AToR,   Opp_AToR)
+
+```
+Hypothesis: Having an assist-to-turnover ratio over 2 leads to moe wins. 
+```{r}
+
+```
+
+
+
+
 
