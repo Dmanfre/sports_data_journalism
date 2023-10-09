@@ -55,21 +55,37 @@ team_box_2022 <- load_wbb_team_box(seasons = 2022)
 Data exploration: Creating an assist-to-turnover ratio
 ```{r}
 # This would generate a team and opponent's AstToR for the season
-wbb_box_23 %>%
+season_ator <- wbb_box_23 %>%
   group_by(TeamFull) %>% 
   summarize(Team_AstToR = sum(TeamAssists) / sum(TeamTurnovers),
             Opp_AstTor = sum(OpponentAssists) / sum (OpponentTurnovers))
 
 #This should give team's AToR in each game
-wbb_box_23 %>% 
+astor_pergame <- wbb_box_23 %>% 
 mutate( Team_AToR = (TeamAssists) / (TeamTurnovers),
         Opp_AToR = (OpponentAssists) / (OpponentTurnovers)) %>% 
-filter(TeamFull == "Maryland Terrapins") %>% 
 select(Game, Date, TeamFull, Opponent, HomeAway, W_L, TeamScore, OpponentScore, TeamAssists, OpponentAssists, TeamTurnovers, OpponentTurnovers, Team_AToR,   Opp_AToR)
 
 ```
 Hypothesis: Having an assist-to-turnover ratio over 2 leads to moe wins. 
+
+What I want to do is see the percentage of games that had an assist to turnover ratio of a certain number and then generate a percentage of those games that resulted in wins and those that resulted in loses. 
+
 ```{r}
+# The average team astor is 0.9845934. I will use this number to base my filter
+# The average opp astor is 0.9550222. I will use this number to base my filter of the opponents.
+average_astors <- astor_pergame %>%
+  summarize(Average_Team_AToR = mean(Team_AToR),
+            Average_oppAToR = mean(Opp_AToR))
+
+astor_pergame %>% 
+filter(Team_AToR >= 0.9)
+#3,605 games resulted in wins with teams that had an astor over 0.9.
+```
+From there, I can identify a team's percentage of wins
+
+I wanto to identify the average astor's in wins and loses.
+Also curious to see what team had the most games with an above average astor.
 
 ```
 
