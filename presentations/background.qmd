@@ -183,6 +183,9 @@ joined_home_team_ator is a dataframe showing the number of wins and the home tea
 ```{r}
 b10 <- joined_home_team_ator %>% 
 filter(home_team_conference == "Big Ten")
+
+p5 <- joined_home_team_ator %>% 
+filter(home_team_conference %in% power_5)
 ```
 
 Just the big ten
@@ -201,28 +204,44 @@ the lowering of the opasity was done via chat gpt
 ggplot() +
   geom_point(data = joined_home_team_ator, aes(x = total_wins, y = avg_team_ator), alpha = 0.2) +
   geom_point(data = b10, aes(x = total_wins, y = avg_team_ator), color = "red") +
+  geom_smooth(data=joined_home_team_ator, aes(x=total_wins, y=avg_team_ator), method="lm") +
   labs(title = "Big Ten Wins vs. Average Assist to Turnover Ratio",
        x = "Total Wins",
        y = "Team Assist to Turnover Ratio") +
   geom_text_repel(data = b10, aes(x = total_wins, y = avg_team_ator, label = home_team_name))
 
 ```
+We see a left to right line here climbing up suggesting that there is a relationship. 
 
+only showing pwoer 5 conferncees 
 ```{r}
 
-
+ggplot(data=joined_home_team_ator, aes(x = total_wins, y = avg_team_ator)) +
+  geom_point(data = p5, aes(x = total_wins, y = avg_team_ator)) +
+  labs(title = "Team Wins vs. Average Assist to Turnover Ratio",
+       x = "Total Wins",
+       y = "Team Assist to Turnover Ratio") +
+  geom_text_repel(data = p5, aes(x = total_wins, y = avg_team_ator, label = home_team_name))
 
 
 ```
 
-
-
-Numberical hard-coding math
+Creating the model 
 ```{r}
 
+model1 <- lm(total_wins ~ avg_team_ator, data = joined_home_team_ator)
+summary(model1)
 
 ```
 
+Exploration and explaination
+- From what I did so far, the weakness I could see myself running into is mixing up the hmme team and away team and the context for which I am analyzing games. 
+
+- Using the model, we learn that there is some sort of relationship because there is a lower p-value, the adjusted R squared number is around 0.3 which shows there is some relationship but it may not be as strongly correlated to the number of wins a team has. 
+
+Some further things I'm curious about are if having a certain astor could predict the number of wins a team could get. Essentially saying "having an astor over 0.7 for X games should result in X wins" 
+
+This may be a bit too complex to analyze. But could also be an obvious question that I may want to answer but dont know hwo to at this moment.
 
 
 
