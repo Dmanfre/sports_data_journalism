@@ -237,7 +237,7 @@ summary(model1)
 Exploration and explaination
 - From what I did so far, the weakness I could see myself running into is mixing up the hmme team and away team and the context for which I am analyzing games. 
 
-- Using the model, we learn that there is some sort of relationship because there is a lower p-value, the adjusted R squared number is around 0.3 which shows there is some relationship but it may not be as strongly correlated to the number of wins a team has. 
+- Using the model, we learn that there is some sort of relationship because there is a lower p-value, the adjusted R squared number is around 0.3 which shows there is some relationship but it may not be as strongly correlated to the number of wins a team has. The residual standard of error is is 3.6 which means this is a good comparison.  
 
 Some further things I'm curious about are if having a certain astor could predict the number of wins a team could get. Essentially saying "having an astor over 0.7 for X games should result in X wins" 
 
