@@ -254,3 +254,70 @@ teamzscore |>
 ```
 
 
+
+Line charts - good for showing change over time
+
+```{r}
+
+logs <- read_csv("https://dwillis.github.io/sports-data-files/logs22.csv")
+
+```
+
+
+```{r}
+umd <- logs %>% filter(Team == "Maryland")
+```
+
+```{r}
+ggplot() + geom_line(data=umd, aes(x=Date, y=TeamFGPCT))
+```
+
+This adds a scale to the y axis so that limits are placed on the range of the axis.
+```{r}
+ggplot() + 
+  geom_line(data=umd, aes(x=Date, y=TeamFGPCT)) + 
+  scale_y_continuous(limits = c(0, .6))
+```
+```{r}
+ill <- logs |> filter(Team == "Illinois")
+
+ggplot() + geom_line(data=umd, aes(x=Date, y=TeamFGPCT), color="red")
+```
+
+
+Maryalnd crossed 50% three times while Illinois had strong shooting nights in the beginning of the seaosn. 
+```{r}
+ggplot() + 
+  geom_line(data=umd, aes(x=Date, y=TeamFGPCT), color="red") + 
+  geom_line(data=ill, aes(x=Date, y=TeamFGPCT), color="orange")
+```
+Flatting out to better define the y axis
+```{r}
+ggplot() + 
+  geom_line(data=umd, aes(x=Date, y=TeamFGPCT), color="red") + 
+  geom_line(data=ill, aes(x=Date, y=TeamFGPCT), color="orange") + 
+  scale_y_continuous(limits = c(0, .70))
+```
+```{r}
+powerfive <- c("SEC", "Big Ten", "Pac-12", "Big 12", "ACC")
+
+p5conf <- logs |> filter(Conference %in% powerfive)
+
+ggplot() + 
+  geom_line(data=p5conf, aes(x=Date, y=TeamFGPCT, group=Team), color="grey") + 
+  geom_line(data=umd, aes(x=Date, y=TeamFGPCT), color="red") + 
+  geom_line(data=ill, aes(x=Date, y=TeamFGPCT), color="orange") + 
+  scale_y_continuous(limits = c(0, .65))
+```
+```{r}
+average <- logs |> group_by(Date) |> summarise(mean_shooting=mean(TeamFGPCT))
+
+ggplot() + 
+  geom_line(data=p5conf, aes(x=Date, y=TeamFGPCT, group=Team), color="grey") + 
+  geom_line(data=umd, aes(x=Date, y=TeamFGPCT), color="red") + 
+  geom_line(data=ill, aes(x=Date, y=TeamFGPCT), color="orange") + 
+  geom_line(data=average, aes(x=Date, y=mean_shooting), color="black") + 
+  scale_y_continuous(limits = c(0, .70))
+```
+
+

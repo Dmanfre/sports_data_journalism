@@ -3,6 +3,8 @@
 library(tidyverse)
 library(cfbfastR)
 library(Hmisc)
+install.packages("waffle")
+library(waffle)
 
 ```
 
@@ -133,8 +135,107 @@ summary(model3)
 #This gave me a very low residual standard of error score but a lower R-squared score as well. What this tells me is that maybe the factors I chose work well in games with a higher differential than those with a lower one. I also think that there is more of a situational relationship here that theres a stronger correlation wtih higher point differentials rather than in close games. Would this mean that penalties don't always influence the point differentials of close games?
 
 
+```
 
+Working with Waffle charts
+Looking at passing and rushing yards for Maryland and Michigan State
+```{r}
+md <- c("Rushing"=175, "Passing"=314)
+ms <- c("Rushing"=100, "Passing"=221)
+```
+
+Making the waffle chart using runs and passing
+```{r}
+#xlab is the label for the x axis
+waffle(
+        md, 
+        rows = 10, 
+        title="Maryland's offense", 
+        xlab="1 square = 1 yard", 
+        colors = c("black", "red")
+)
+```
+```{r}
+#comparing the two teams on passing yards 
+passing <- c("Maryland"=314, "Michigan State"=221)
+
+waffle(
+        passing, 
+        rows = 10, 
+        title="Maryland vs Michigan State: passing", 
+        xlab="1 square = 1 yard", 
+        colors = c("red", "green")
+)
 
 
 ```
+
+```{r}
+#Iron is used to buld multiple waffle charts and stack them on top of each other. 
+
+iron(
+ waffle(md, 
+        rows = 10, 
+        title="Maryland's offense", 
+        xlab="1 square = 1 yard", 
+        colors = c("black", "red")
+        ),
+ waffle(ms, 
+        rows = 10, 
+        title="Michigan State's offense", 
+        xlab="1 square = 1 yard", 
+        colors = c("black", "green")
+        )
+)
+```
+```{r}
+md <- c("Rushing"=175, "Passing"=314)
+ms <- c("Rushing"=100, "Passing"=221, 168)
+
+```
+
+```{r}
+
+iron(
+ waffle(md, 
+        rows = 10, 
+        title="Maryland's offense", 
+        xlab="1 square = 1 yard", 
+        colors = c("black", "red")
+        ),
+ waffle(ms, 
+        rows = 10, 
+        title="Michigan State's offense", 
+        xlab="1 square = 1 yard",
+        colors = c("black", "green", "white")
+        )
+)
+
+```
+
+```{r}
+iron(
+ waffle(md/2, 
+        rows = 10, 
+        title="Maryland's offense", 
+        xlab="1 square = 2 yards", 
+        colors = c("black", "red")
+        ),
+ waffle(ms/2, 
+        rows = 10, 
+        title="Michigan State's offense", 
+        xlab="1 square = 2 yards",
+        colors = c("black", "green", "white")
+        )
+)
+
+```
+
+Line Charts - good for showing change over time
+
+
+
+
+
+
 

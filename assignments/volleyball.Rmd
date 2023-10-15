@@ -130,4 +130,17 @@ Many of its wins have come in straight sets showing that Western Kentucky has do
 
 
 
+```{r}
+
+rosters <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/vb_rosters_2023_24.csv")
+
+rosters_with_states <- rosters %>% 
+  separate(Hometown, c("town", "state"), sep=",")
+```
+
+
+```{r}
+
+```
+
 
