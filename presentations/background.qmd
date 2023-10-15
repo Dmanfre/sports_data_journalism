@@ -35,6 +35,9 @@ library(tidyverse)
 #install.packages("wehoop")
 library(wehoop)
 library(tictoc)
+library(ggplot2)
+install.packages("ggrepel")
+library(ggrepel)
 ```
 
 
@@ -176,18 +179,37 @@ Also curious to see what team had the most games with an above average AToR... t
 
 Then look at any outliers. 
 
-joined_home_team_ator is a dataframe showing the numebr of wins and the home team's avg ator for the seaosn. 
+joined_home_team_ator is a dataframe showing the number of wins and the home team's avg ator for the season. I want to filter this so that teams in the Big Ten are highlighted. 
 ```{r}
-
-ggplot(data=joined_home_team_ator, aes(x = total_wins, y = avg_team_ator)) +
-  geom_point() +
-  labs(title = "Team Wins vs. Average Assist to Turnover Ratio",
-       x = "Total Wins",
-       y = "Team Assist to Turnover Ratio")
+b10 <- joined_home_team_ator %>% 
+filter(home_team_conference == "Big Ten")
 ```
 
-Doing a scatter plot that highlights the big ten teams
+Just the big ten
 ```{r}
+ggplot(data=joined_home_team_ator, aes(x = total_wins, y = avg_team_ator)) +
+  geom_point(data = b10, aes(x = total_wins, y = avg_team_ator)) +
+  labs(title = "Team Wins vs. Average Assist to Turnover Ratio",
+       x = "Total Wins",
+       y = "Team Assist to Turnover Ratio") +
+  geom_text_repel(data = b10, aes(x = total_wins, y = avg_team_ator, label = home_team_name))
+```
+
+Showing the big ten among everyone else. 
+the lowering of the opasity was done via chat gpt
+```{r}
+ggplot() +
+  geom_point(data = joined_home_team_ator, aes(x = total_wins, y = avg_team_ator), alpha = 0.2) +
+  geom_point(data = b10, aes(x = total_wins, y = avg_team_ator), color = "red") +
+  labs(title = "Big Ten Wins vs. Average Assist to Turnover Ratio",
+       x = "Total Wins",
+       y = "Team Assist to Turnover Ratio") +
+  geom_text_repel(data = b10, aes(x = total_wins, y = avg_team_ator, label = home_team_name))
+
+```
+
+```{r}
+
 
 
 
