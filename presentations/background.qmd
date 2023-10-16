@@ -44,7 +44,7 @@ library(ggrepel)
 ```{r}
 # loading data from wehoops library
 
-game_boxes_with_teams <- read_csv("presentations/game_boxes_with_teams.csv")
+game_boxes_with_teams <- read_csv("game_boxes_with_teams.csv")
 View(game_boxes_with_teams)
 
 ```
@@ -244,6 +244,7 @@ Some further things I'm curious about are if having a certain astor could predic
 This may be a bit too complex to analyze. But could also be an obvious question that I may want to answer but dont know hwo to at this moment.
 
 
-
+Another question
+- Could I make a list of players' assist to turn over ratio and then make a beesworm plot (yes I looked ahead in the book) to find how point guards from a certain confernece ranked in the category? Maybe say Eliza Pinzan had a better Assist to turnover ratio in home games vs Aaway games. 
 
 
