@@ -3,6 +3,7 @@ Dylan Manfre
 
 ```{r}
 library(tidyverse)
+library(ggalt)
 ```
 
 ```{r}
@@ -129,7 +130,6 @@ Many of its wins have come in straight sets showing that Western Kentucky has do
 
 
 
-
 ```{r}
 
 rosters <- read_csv("https://raw.githubusercontent.com/Sports-Roster-Data/womens-volleyball/main/vb_rosters_2023_24.csv")
@@ -139,8 +139,117 @@ rosters_with_states <- rosters %>%
 ```
 
 
+
+Dumbells and Lolly pop charts
+
+
 ```{r}
+logs <- read_csv("https://dwillis.github.io/sports-data-files/ncaa_womens_volleyball_matchstats_2022.csv")
 
 ```
+
+Looking at teams in the big ten and looking at their errors. This has the team, their errors and their opponents errors for last seaosn.
+```{r}
+big10 <- c("Nebraska Cornhuskers", "Iowa Hawkeyes", "Minnesota Golden Gophers", "Illinois Fighting Illini", "Northwestern Wildcats", "Wisconsin Badgers", "Indiana Hoosiers", "Purdue Boilermakers", "Ohio St. Buckeyes", "Michigan Wolverines", "Michigan St. Spartans", "Penn St. Nittany Lions", "Rutgers Scarlet Knights", "Maryland Terrapins, Terps")
+
+errors <- logs |>
+  filter(team %in% big10) |> 
+  group_by(team) |> 
+  summarise(
+    total_errors = sum(errors), 
+    opp_errors = sum(defensive_errors))
+```
+
+
+```{r}
+ggplot() + 
+  geom_dumbbell(
+    data=errors, 
+    aes(y=team, x=total_errors, xend=opp_errors),
+    size = 1,
+    colour = "grey",
+    colour_x = "green",
+    colour_xend = "red") +
+  theme_minimal()
+  
+#xend is the end point of the of the dumbell
+#issue is that we don't know which end is to which in the graph
+#Ideally you want red on the right and green on the left
+```
+
+Making chart easier to see
+
+```{r}
+ggplot() + 
+  geom_dumbbell(
+    data=errors, 
+    aes(y=team, x=total_errors, xend=opp_errors),
+    size = 2,
+    colour = "grey",
+    colour_x = "green",
+    colour_xend = "red") +
+  theme_minimal()
+
+```
+Reordering to see the good stuff first.
+Re ording to see the opponent errors first
+This is the same as writing arrange(desc(opp_errors))
+```{r}
+ggplot() + 
+  geom_dumbbell(
+    data=errors, 
+    aes(y=reorder(team, opp_errors), x=total_errors, xend=opp_errors),
+    size = 2,
+    colour = "grey",
+    colour_x = "green",
+    colour_xend = "red") +
+  theme_minimal()
+
+
+```
+
+Lollipop Charts: They show magnatude and only show one dimention. 
+ 
+```{r}
+ggplot() + 
+  geom_lollipop(
+    data=errors, 
+    aes(y=team, x=opp_errors), 
+    horizontal = TRUE
+    )
+
+# you can do to line charts what you do with dumbell charts
+```
+```{r}
+ggplot() + 
+  geom_lollipop(
+    data=errors, 
+    aes(y=reorder(team, opp_errors), x=opp_errors), 
+    horizontal = TRUE
+    ) + theme_minimal() + 
+  labs(title = "Maryland, Rutgers force more errors", y="team")
+
+```
+
+```{r}
+md <- errors |> filter(team == "Maryland Terrapins, Terps")
+
+ggplot() + 
+  geom_lollipop(
+    data=errors, 
+    aes(y=reorder(team, opp_errors), x=opp_errors), 
+    horizontal = TRUE
+    ) + 
+  geom_lollipop(
+    data=md,
+    aes(y=team, x=opp_errors),
+    horizontal = TRUE,
+    color = "red"
+  ) + 
+  theme_minimal() + 
+  labs(title = "Maryland forced the most errors among Big Ten teams", y="team")
+
+```
+
 
 

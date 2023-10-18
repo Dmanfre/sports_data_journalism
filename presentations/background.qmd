@@ -78,6 +78,25 @@ power_5 <- c("ACC", "Big 12", "Big Ten", "Pac-12", "SEC")
 
 ```
 
+Create an if_else statement to popualte a columns called "winner" showing the winning team name and do it on the first dataframe. 
+
+If away team points were greater than home team, put away team name
+if home team points were greater than away team points, put home team name. 
+```{r}
+#columns
+#pts = home team points
+#opp_pts = away team points 
+#home_team_name
+#away_team_name
+
+
+
+
+```
+
+Then do group by and counts with that new column. 
+
+
 
 Hypothesis: Having an assist-to-turnover ratio over 2 leads to moe wins. 
 
@@ -117,15 +136,17 @@ I want to see how many wins each team has.
 ```{r}
 
 total_home_wins <- game_boxes_with_teams %>% 
-  filter(win_loss == "1") %>% 
+  filter(win_loss == 1) %>% 
   group_by(home_team_name, home_team_conference) %>% 
   summarize(total_wins = sum(win_loss)) %>%
   arrange(desc(total_wins))
 
 view(total_home_wins)
 
+#This is wrong and needs to be updated
+# I did it this way because I figured since I was doing the same thing, I copied and pasted and changed the dataframes. 
 total_away_wins <- game_boxes_with_teams %>% 
-  filter(win_loss == "1") %>% 
+  filter(win_loss == 1) %>% 
   group_by(away_team_name, away_team_conference) %>% 
   summarize(total_wins = sum(win_loss)) %>%
   arrange(desc(total_wins))
@@ -171,7 +192,6 @@ filter(win_loss == "1") %>%
   summarize(Average_AToR = mean(Team_AToR),
     Average_oppAToR = mean(Opp_AToR)
   )
-
 ```
 
 
