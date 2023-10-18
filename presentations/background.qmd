@@ -38,6 +38,8 @@ library(tictoc)
 library(ggplot2)
 install.packages("ggrepel")
 library(ggrepel)
+
+
 ```
 
 
@@ -51,7 +53,6 @@ View(game_boxes_with_teams)
 
 cleaning
 ```{r}
-
 #column rename
 
 game_boxes_with_teams <- game_boxes_with_teams %>% 
@@ -89,9 +90,13 @@ if home team points were greater than away team points, put home team name.
 #home_team_name
 #away_team_name
 
+game_boxes_with_teams <- game_boxes_with_teams %>% 
+  mutate(winner = ifelse(opp_pts > pts, away_team_name, home_team_name))
 
-
-
+#make sure it worked
+game_boxes_with_teams %>% 
+  select(home_team_name, pts, away_team_name, opp_pts, winner)
+#Confirmed that it does
 ```
 
 Then do group by and counts with that new column. 
@@ -231,9 +236,10 @@ ggplot() +
   geom_text_repel(data = b10, aes(x = total_wins, y = avg_team_ator, label = home_team_name))
 
 ```
+
 We see a left to right line here climbing up suggesting that there is a relationship. 
 
-only showing pwoer 5 conferncees 
+only showing pwoer 5 conferences 
 ```{r}
 
 ggplot(data=joined_home_team_ator, aes(x = total_wins, y = avg_team_ator)) +
