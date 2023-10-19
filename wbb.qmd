@@ -1,0 +1,83 @@
+---
+title: "wbb.qmd"
+format: html
+editor: visual
+---
+
+Lesson on Simulations chapter 14 in the book.
+
+
+```{r}
+library(tidyverse)
+```
+
+Simulations allow us to say what we expect distribution of results to be
+
+This says hey run me some simulations and use rbinomial. N is the number of simulations. size is the the number of something happening and the prob is the percentage. This says 1000 simulations, doing 20 shows, how many times will she make 5
+```{r}
+set.seed(1234)
+
+simulations <- rbinom(n = 1000, size = 20, prob = .317)
+
+table(simulations)
+
+#top line is the number of makes. the bottom line is the number of times that outcome happens.
+#The changes of 13 or more are next to 0. 
+```
+We think about this in terms of how often something happens or how unlikely something is to happen. 
+
+
+Cold Streaks
+```{r}
+
+set.seed(1234)
+
+simulations <- rbinom(n = 1000, size = 15, prob = .326)
+
+hist(simulations)
+
+
+
+table(simulations)
+```
+streaks across time
+
+the lead functions allows you to look at the next record. 
+```{r}
+
+library(dplyr)
+
+set.seed(1234)
+
+simulations <- rbinom(n = 1000, size = 1, prob = .377)
+
+four_in_a_row <- mean(simulations == 1 & lead(simulations, 1) == 1 & lead(simulations, 2) == 1 & lead(simulations, 3) == 1)
+
+odds <- 1/four_in_a_row
+```
+
+
+stewie's percetnage .465
+It would happen 10 times over 1000 where she would shoot 3-17
+```{r}
+set.seed(1234)
+
+simulations <- rbinom(n = 1000, size = 17, prob = .465)
+
+table(simulations)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
