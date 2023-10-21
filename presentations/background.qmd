@@ -32,6 +32,7 @@ https://statathlon.com/team_stats_analysing_impact/#:~:text=That%20the%20assist%
 ```{r}
 #libraries
 library(tidyverse)
+library(janitor)
 #install.packages("wehoop")
 library(wehoop)
 library(tictoc)
@@ -56,50 +57,38 @@ cleaning
 #column rename
 
 game_boxes_with_teams <- game_boxes_with_teams %>% 
-  rename( Team_AToR = ast_tov_ratio,
-          Opp_AToR = opp_ast_tov_ratio,
+  rename( team_ator = ast_tov_ratio,
+          opp_ator = opp_ast_tov_ratio,
           win_loss = win)
 
 #fiter out NAs
 game_boxes_with_teams <- game_boxes_with_teams %>%
-  filter(!is.na(Team_AToR))
+  filter(!is.na(team_ator))
 
-AToR_only <- game_boxes_with_teams %>% 
-  select(ncaa_game_id, gamedate_east, home_team_name, away_team_name, win_loss, Team_AToR, Opp_AToR)
+#win columns
+game_boxes_with_teams <- game_boxes_with_teams %>% 
+  mutate(winner = ifelse(opp_pts > pts, away_team_name, home_team_name))
 
+#make sure it worked
+winner_loser <- game_boxes_with_teams %>% 
+  select(home_team_name, pts, away_team_name, opp_pts, winner)
+
+#picking columns I want
+ator_only <- game_boxes_with_teams %>% 
+  select(ncaa_game_id, gamedate_east, home_team_name, away_team_name, win_loss, team_ator, opp_ator, winner)
+
+View(ator_only)
 ```
 
 Lists
 ```{r}
 
-big_ten <- c("Indiana", "Maryland", "Michigan", "Michigan State", "Minnesota", "Nebraska", "Northwestern", "Ohio State", "Penn State", "Purdue", "Rutgers", "Illinois", "Iowa", "Wisconsin")
+big_ten <- c("Indiana", "Maryland", "Michigan", "Michigan St.", "Minnesota", "Nebraska", "Northwestern", "Ohio St.", "Penn St.", "Purdue", "Rutgers", "Illinois", "Iowa", "Wisconsin")
 
 power_5 <- c("ACC", "Big 12", "Big Ten", "Pac-12", "SEC")
 
 
 ```
-
-Create an if_else statement to popualte a columns called "winner" showing the winning team name and do it on the first dataframe. 
-
-If away team points were greater than home team, put away team name
-if home team points were greater than away team points, put home team name. 
-```{r}
-#columns
-#pts = home team points
-#opp_pts = away team points 
-#home_team_name
-#away_team_name
-
-game_boxes_with_teams <- game_boxes_with_teams %>% 
-  mutate(winner = ifelse(opp_pts > pts, away_team_name, home_team_name))
-
-#make sure it worked
-game_boxes_with_teams %>% 
-  select(home_team_name, pts, away_team_name, opp_pts, winner)
-#Confirmed that it does
-```
-
-Then do group by and counts with that new column. 
 
 
 
@@ -109,28 +98,32 @@ What I want to do is see the percentage of games that had an assist to turnover 
 
 # The average team astor is 0.9717791 I will use this number to base my filter
 # The average opp astor is 0.7773279 I will use this number to base my filter of the opponents.
+
+
 ```{r}
 game_boxes_with_teams %>%
-  summarize(Average_AToR = mean(Team_AToR),
-    Average_oppAToR = mean(Opp_AToR)
+  summarize(Average_ator = mean(team_ator),
+    Average_oppAToR = mean(opp_ator)
   )
 
 game_boxes_with_teams %>% 
-filter(Team_AToR >= 0.97)
+filter(team_ator >= 0.97)
 
 ```
 6,243 games resulted in wins with teams that had an astor over 0.97.
 
-Number of games when a team's ATOR was > than Opponents 
+
+
+Number of teams with a greater ator than opponent
 ```{r}
 
 game_boxes_with_teams %>% 
-filter(Team_AToR > Opp_AToR) %>% 
+filter(team_ator > opp_ator) %>% 
 count()
 #9515
 
 game_boxes_with_teams %>% 
-filter( Opp_AToR > Team_AToR) %>% 
+filter( opp_ator > team_ator) %>% 
 count()
 #6052
 
@@ -140,128 +133,79 @@ I want to see how many wins each team has.
 
 ```{r}
 
-total_home_wins <- game_boxes_with_teams %>% 
-  filter(win_loss == 1) %>% 
-  group_by(home_team_name, home_team_conference) %>% 
-  summarize(total_wins = sum(win_loss)) %>%
-  arrange(desc(total_wins))
+total_wins <- game_boxes_with_teams %>% 
+group_by(winner) %>% 
+ summarize(count = n()) %>%  
+arrange(desc(count))
 
-view(total_home_wins)
-
-#This is wrong and needs to be updated
-# I did it this way because I figured since I was doing the same thing, I copied and pasted and changed the dataframes. 
-total_away_wins <- game_boxes_with_teams %>% 
-  filter(win_loss == 1) %>% 
-  group_by(away_team_name, away_team_conference) %>% 
-  summarize(total_wins = sum(win_loss)) %>%
-  arrange(desc(total_wins))
-
+#Confirm this worked.
 ```
 
-
-Season ATOR
-```{r}
-#home team
-avg_ator_season <-  game_boxes_with_teams %>% 
-  group_by(home_team_name, home_team_conference) %>% 
-  summarise(avg_team_ator = mean(Team_AToR),
-            avg_opp_ator = mean(Opp_AToR))
-
-joined_home_team_ator <- inner_join(avg_ator_season, total_home_wins, by ="home_team_name")
-
-joined_home_team_ator <- joined_home_team_ator %>% 
-select(-home_team_conference.y)
-
-#opp 
-
-avg_ator_season_away <-  game_boxes_with_teams %>% 
-  group_by(away_team_name, away_team_conference) %>% 
-  summarise(avg_team_ator = mean(Team_AToR),
-            avg_opp_ator = mean(Opp_AToR))
-
-joined_away_team_ator <- inner_join(avg_ator_season_away, total_away_wins, by ="away_team_name")
-
-joined_away_team_ator <- joined_away_team_ator %>% 
-  select(-away_team_conference.y) %>% 
-  rename(away_team_confernece = away_team_conference.x)
-
-```
-
+I am only focused on wins. 
 
 I want to to identify the average astor's in wins and loses.
 
-Analysis: Teams have a larger Assist to turn over ratio in wins than losses which makes sense because it shows a team is sharing the ball well and also maintaining ball good ball control. It's a staggering difference 
+Analysis: 
 ```{r}
-avg_ator_w_and_l <- game_boxes_with_teams %>% 
-filter(win_loss == "1") %>% 
-  summarize(Average_AToR = mean(Team_AToR),
-    Average_oppAToR = mean(Opp_AToR)
-  )
-```
+season_ator_winners <- game_boxes_with_teams %>%
+  group_by(winner) %>% 
+  summarize(avg_ator = mean(team_ator),
+    avg_opp_ator = mean(opp_ator)) %>% 
+arrange(desc(avg_ator))
 
+
+joined_season_ator_winner <- inner_join(season_ator_winners, total_wins, by = "winner")
+
+joined_season_ator_winner <- joined_season_ator_winner %>% 
+  rename(total_wins = count)
+
+```
 
 Also curious to see what team had the most games with an above average AToR... this could be a graph I think... use a scatter plot the code is in the textbook. 
 
 Then look at any outliers. 
 
-joined_home_team_ator is a dataframe showing the number of wins and the home team's avg ator for the season. I want to filter this so that teams in the Big Ten are highlighted. 
+joined_season_ator_winner is a dataframe showing the number of wins and team's avg ator for the season. I want to filter this so that teams in the Big Ten are highlighted. 
 ```{r}
-b10 <- joined_home_team_ator %>% 
-filter(home_team_conference == "Big Ten")
+b10 <- joined_season_ator_winner %>% 
+filter(winner %in% big_ten)
 
-p5 <- joined_home_team_ator %>% 
-filter(home_team_conference %in% power_5)
 ```
 
 Just the big ten
 ```{r}
-ggplot(data=joined_home_team_ator, aes(x = total_wins, y = avg_team_ator)) +
-  geom_point(data = b10, aes(x = total_wins, y = avg_team_ator)) +
+ggplot(data = joined_season_ator_winner, aes(x = total_wins, y = avg_ator)) +
+  geom_point(data = b10, aes(x = total_wins, y = avg_ator)) +
+  geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner)) +
   labs(title = "Team Wins vs. Average Assist to Turnover Ratio",
        x = "Total Wins",
-       y = "Team Assist to Turnover Ratio") +
-  geom_text_repel(data = b10, aes(x = total_wins, y = avg_team_ator, label = home_team_name))
+       y = "Team Assist to Turnover Ratio")
+
 ```
 
 Showing the big ten among everyone else. 
 the lowering of the opasity was done via chat gpt
 ```{r}
 ggplot() +
-  geom_point(data = joined_home_team_ator, aes(x = total_wins, y = avg_team_ator), alpha = 0.2) +
-  geom_point(data = b10, aes(x = total_wins, y = avg_team_ator), color = "red") +
-  geom_smooth(data=joined_home_team_ator, aes(x=total_wins, y=avg_team_ator), method="lm") +
+  geom_point(data = joined_season_ator_winner, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
+  geom_point(data = b10, aes(x = total_wins, y = avg_ator), color = "red") +
+  geom_smooth(data=joined_season_ator_winner, aes(x=total_wins, y=avg_ator), method="lm") +
   labs(title = "Big Ten Wins vs. Average Assist to Turnover Ratio",
        x = "Total Wins",
        y = "Team Assist to Turnover Ratio") +
-  geom_text_repel(data = b10, aes(x = total_wins, y = avg_team_ator, label = home_team_name))
+  geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))
 
 ```
-
-We see a left to right line here climbing up suggesting that there is a relationship. 
-
-only showing pwoer 5 conferences 
+We see a left to right line here climbing up suggesting that there is a relationship. Creating the model 
 ```{r}
 
-ggplot(data=joined_home_team_ator, aes(x = total_wins, y = avg_team_ator)) +
-  geom_point(data = p5, aes(x = total_wins, y = avg_team_ator)) +
-  labs(title = "Team Wins vs. Average Assist to Turnover Ratio",
-       x = "Total Wins",
-       y = "Team Assist to Turnover Ratio") +
-  geom_text_repel(data = p5, aes(x = total_wins, y = avg_team_ator, label = home_team_name))
-
-
-```
-
-Creating the model 
-```{r}
-
-model1 <- lm(total_wins ~ avg_team_ator, data = joined_home_team_ator)
+model1 <- lm(total_wins ~ avg_ator, data = joined_season_ator_winner)
 summary(model1)
 
 ```
 
+
 Exploration and explaination
-- From what I did so far, the weakness I could see myself running into is mixing up the hmme team and away team and the context for which I am analyzing games. 
 
 - Using the model, we learn that there is some sort of relationship because there is a lower p-value, the adjusted R squared number is around 0.3 which shows there is some relationship but it may not be as strongly correlated to the number of wins a team has. The residual standard of error is is 3.6 which means this is a good comparison.  
 
