@@ -323,12 +323,81 @@ Its best ator was a game agaisnt UCF when it had an ator of a 4.0 which is huge.
 
 Its highest allowed ator was a mid-November against Indiana who finsihed with a 2.0 and a 12-point win. Maybe I should create a differential column to show point differential and see if ator is predictive in any way of a larger or smaller point differential as opposed to pure wins. The question here is "Does having a high ator predict if a team will have a large point differential in wins.
 
+Oregon is the team with the highest avg ator at 1.65 and it earned them 20 wins last season.
+It had 15 games last year where it finished north of that aveage and it resulted in nine wins. 
 ```{r}
-
-
+ore <- ator_only %>% 
+  filter(home_team_name == "Oregon" | away_team_name == "Oregon")
 
 ```
 
+```{r}
+ator_only %>% 
+  filter(home_team_name == "Oregon" | away_team_name == "Oregon", team_ator > 1.6) %>%
+  group_by(winner) %>% 
+  summarize(count = n())
+
+```
+
+Here, I want to visualize Oregon's team ator. A handful of games, Oregon is under a 2.0 ator, which is common for most teams. However, we see a sharp decline in its team ator in January. 
+
+```{r}
+ggplot() + geom_line(data=ore, aes(x=gamedate_east, y=team_ator))
+```
+
+Looking at Oregon's January games, the Ducks won half of its games going 4-8. The ator was decent but compared to the rest of the season, January was Oregon's worst month because it had a handful of games under a 2.0. 
+```{r}
+#Used ChatGPT for this code because I had a brain fart. 
+
+ore %>% 
+  filter(gamedate_east >= as.Date("2023-01-01") & gamedate_east <= as.Date("2023-01-29")) %>%
+  group_by(winner) %>% 
+  summarize(count = n())
+
+```
+
+Viewing the ators as a line graph. I want to see if there is a month where teams are above a certain point or under.
+```{r}
+
+ggplot() + geom_line(data=ator_only, aes(x=gamedate_east, y=team_ator))
+```
+# The massive spike is from Berea from a game on 2023-02-01 when it had 28 assists and 1 turnover in a 68 point win over Wesleyan (GA).
+
+# This entry really skews my data. I put a limit on the chart to eliminate that game. The highest ator is a 8.5
+
+```{r}
+ggplot() + geom_line(data=ator_only, aes(x=gamedate_east, y=team_ator))+ scale_y_continuous(limits = c(0, 10))
+```
+Creating the average ator and putting it in the chart. 
+
+```{r}
+average <- ator_only %>% 
+  group_by(gamedate_east) %>% 
+  summarise(avg_ator=mean(team_ator))
+```
+
+The slight gap between the end of December and the beginning of January is interesting because it flat lines for a bit. 
+
+I highlighted Oregon on this chart in green. Even though Oregon had its worst ator in January, it's still above average. The majority of its games are. 
+```{r}
+ggplot() + 
+  geom_line(data=ator_only, aes(x=gamedate_east, y=team_ator), color="grey") + 
+  geom_line(data=average, aes(x=gamedate_east, y=avg_ator), color="black") +        geom_line(data=ore, aes(x=gamedate_east, y=team_ator), color="green") + 
+ scale_y_continuous(limits = c(0, 10))
+```
+
+```{r}
+#Trying to see what happens in that late December flatline
+ator_only %>% 
+  filter(gamedate_east >= as.Date("2022-12-02") & gamedate_east <= as.Date("2023-12-31"))
+
+```
+
+
+Further conserns:
+- My one main gripe is that I feel I'm being too trivial at this stage. I feel as though I'm trying to find the answer to soemthing instead of prove a point which originally is that having a good assist to turnover ratio leads to more wins.
+
+- How can I get to a spot of beginning to prove my point?
 
 
 
