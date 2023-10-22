@@ -37,7 +37,7 @@ library(janitor)
 library(wehoop)
 library(tictoc)
 library(ggplot2)
-install.packages("ggrepel")
+#install.packages("ggrepel")
 library(ggrepel)
 
 
@@ -310,8 +310,19 @@ Also, LOL Rutgers. There's your Jersey dig for this assignment. Have a laugh. So
 
 Ohio State, Indiana and Maryland also have strong guards so it makes sense why they have more wins and a higher ator.
 
+Tennesee is still interesting to me. I want to see what their ator was in their games.
 ```{r}
+#Can use this code to show other team's game-by-game breakdowwn. 
+tenn <-  game_boxes_with_teams %>% 
+  filter(home_team_name == "Tennessee" | away_team_name == "Tennessee") %>% 
+  select(gamedate_east, home_team_name, pts, away_team_name, opp_pts, winner, ast, tov, opp_ast, opp_tov, team_ator, opp_ator )
 
+```
+Its best ator was a game agaisnt UCF when it had an ator of a 4.0 which is huge. They had 24 assits that game. UCF only had 11 assists and 15 turnovers. That particular game displayed what Tennessee is able to do on defense and how it can capitalize off opponents mistakes. 
+
+Its highest allowed ator was a mid-November against Indiana who finsihed with a 2.0 and a 12-point win. Maybe I should create a differential column to show point differential and see if ator is predictive in any way of a larger or smaller point differential as opposed to pure wins. The question here is "Does having a high ator predict if a team will have a large point differential in wins.
+
+```{r}
 
 ```
 
