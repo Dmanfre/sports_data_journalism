@@ -277,7 +277,7 @@ group_by(conference) %>%
 ```
 It's a close race but teams in the Pac-12 had the highest ator last season. The Big Ten had the second highest. There are many talented guards in the Pac-12 and this is something I can look further into later on. I'm curious if there would be any centers who had a particularly high ator or non-guards.
 
-scatter plot of powr five teams
+scatter plot of powr five teams vs. the big ten
 ```{r}
 
 b10vp5_ator <- ggplot() +
@@ -288,11 +288,30 @@ b10vp5_ator <- ggplot() +
        x = "Total Wins",
        y = "Team Assist to Turnover Ratio") +
   geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))
+```
+
+big ten vs. SEC comparison
+```{r}
+b10vsec <- ggplot() +
+  geom_point(data = conferences_ator, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
+  geom_point(data = b10, aes(x = total_wins, y = avg_ator), color = "red") +
+  geom_point(data = sec, aes(x = total_wins, y = avg_ator), color = "blue") +
+  geom_smooth(data=conferences_ator, aes(x=total_wins, y=avg_ator), method="lm") +
+  labs(title = "Big Ten Wins vs. Power 5 teams Average Assist to Turnover Ratio",
+       x = "Total Wins",
+       y = "Team Assist to Turnover Ratio") +
+  geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))+
+  geom_text_repel(data = sec, aes(x = total_wins, y = avg_ator, label = winner))
 
 ```
-The results of this scatter plot are that Big 10 teams are still pretty spread out but many of them have a high ator. Iowa was the only Big Ten team with over 30 wins. Tennessee is very interesting as a power five team nearly at the 1.5 ator mark especially since the SEC is toward the bottom fo the conference rankings.
+The results of these two scatter plots are interesting. The Big 10 teams are still pretty spread out but many of them have a high ator. Iowa was the only Big Ten team with over 30 wins. Tennessee is very interesting as a power five team nearly at the 1.5 ator mark especially since the SEC is toward the bottom fo the conference rankings.
 
-Also, LOL Rutgers.
+Also, LOL Rutgers. There's your Jersey dig for this assignment. Have a laugh. South Carolina and LSU are interesting to me because while they won a ton, they had a lower ator than Iowa by a lot. 
+
+```{r}
+
+
+```
 
 
 
