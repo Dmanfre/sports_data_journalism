@@ -297,16 +297,18 @@ b10vsec <- ggplot() +
   geom_point(data = b10, aes(x = total_wins, y = avg_ator), color = "red") +
   geom_point(data = sec, aes(x = total_wins, y = avg_ator), color = "blue") +
   geom_smooth(data=conferences_ator, aes(x=total_wins, y=avg_ator), method="lm") +
-  labs(title = "Big Ten Wins vs. Power 5 teams Average Assist to Turnover Ratio",
+  labs(title = "Teams with strong guard depth have higher Assist to Turnover Ratios",
+       subtitle = "Big Ten teams listed in red, SEC listed in blue.",
        x = "Total Wins",
        y = "Team Assist to Turnover Ratio") +
   geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))+
   geom_text_repel(data = sec, aes(x = total_wins, y = avg_ator, label = winner))
-
 ```
 The results of these two scatter plots are interesting. The Big 10 teams are still pretty spread out but many of them have a high ator. Iowa was the only Big Ten team with over 30 wins. Tennessee is very interesting as a power five team nearly at the 1.5 ator mark especially since the SEC is toward the bottom fo the conference rankings.
 
-Also, LOL Rutgers. There's your Jersey dig for this assignment. Have a laugh. South Carolina and LSU are interesting to me because while they won a ton, they had a lower ator than Iowa by a lot. 
+Also, LOL Rutgers. There's your Jersey dig for this assignment. Have a laugh. South Carolina and LSU are interesting to me because while they won a ton, they had a lower ator than Iowa by a lot. Is that a coaching philosophy difference? Iowa, because of Caitlin Clark and Gabby Marshall, probably emphasize its gaurd play more than South Carolina. 
+
+Ohio State, Indiana and Maryland also have strong guards so it makes sense why they have more wins and a higher ator.
 
 ```{r}
 
