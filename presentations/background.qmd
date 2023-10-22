@@ -67,7 +67,8 @@ game_boxes_with_teams <- game_boxes_with_teams %>%
 
 #win columns
 game_boxes_with_teams <- game_boxes_with_teams %>% 
-  mutate(winner = ifelse(opp_pts > pts, away_team_name, home_team_name))
+  mutate(winner = ifelse(opp_pts > pts, away_team_name, home_team_name),
+         difference = pts - opp_pts)
 
 #make sure it worked
 winner_loser <- game_boxes_with_teams %>% 
@@ -75,7 +76,7 @@ winner_loser <- game_boxes_with_teams %>%
 
 #picking columns I want
 ator_only <- game_boxes_with_teams %>% 
-  select(ncaa_game_id, gamedate_east, home_team_name, away_team_name, win_loss, team_ator, opp_ator, winner)
+    select(gamedate_east, home_team_name, pts, away_team_name, opp_pts, winner, ast, tov, opp_ast, opp_tov, team_ator, opp_ator, difference)
 
 View(ator_only)
 ```
@@ -313,9 +314,9 @@ Ohio State, Indiana and Maryland also have strong guards so it makes sense why t
 Tennesee is still interesting to me. I want to see what their ator was in their games.
 ```{r}
 #Can use this code to show other team's game-by-game breakdowwn. 
-tenn <-  game_boxes_with_teams %>% 
+tenn <-  ator_only %>% 
   filter(home_team_name == "Tennessee" | away_team_name == "Tennessee") %>% 
-  select(gamedate_east, home_team_name, pts, away_team_name, opp_pts, winner, ast, tov, opp_ast, opp_tov, team_ator, opp_ator )
+  select(gamedate_east, home_team_name, pts, away_team_name, opp_pts, winner, ast, tov, opp_ast, opp_tov, team_ator, opp_ator, difference)
 
 ```
 Its best ator was a game agaisnt UCF when it had an ator of a 4.0 which is huge. They had 24 assits that game. UCF only had 11 assists and 15 turnovers. That particular game displayed what Tennessee is able to do on defense and how it can capitalize off opponents mistakes. 
@@ -323,6 +324,8 @@ Its best ator was a game agaisnt UCF when it had an ator of a 4.0 which is huge.
 Its highest allowed ator was a mid-November against Indiana who finsihed with a 2.0 and a 12-point win. Maybe I should create a differential column to show point differential and see if ator is predictive in any way of a larger or smaller point differential as opposed to pure wins. The question here is "Does having a high ator predict if a team will have a large point differential in wins.
 
 ```{r}
+
+
 
 ```
 
