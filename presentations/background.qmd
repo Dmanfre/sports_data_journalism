@@ -286,11 +286,16 @@ b10vp5_ator <- ggplot() +
   geom_smooth(data=conferences_ator, aes(x=total_wins, y=avg_ator), method="lm") +
   labs(title = "Big Ten Wins vs. Power 5 teams Average Assist to Turnover Ratio",
        x = "Total Wins",
-       y = "Team Assist to Turnover Ratio")
+       y = "Team Assist to Turnover Ratio") +
   geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))
 
-
 ```
-The results of this scatter plot are that Big 10 teams are still pretty spread out but many of them have a high ator. Iowa was the only Big Ten team with over 30 wins 
+The results of this scatter plot are that Big 10 teams are still pretty spread out but many of them have a high ator. Iowa was the only Big Ten team with over 30 wins. Tennessee is very interesting as a power five team nearly at the 1.5 ator mark especially since the SEC is toward the bottom fo the conference rankings.
+
+Also, LOL Rutgers.
+
+
+
+
 
 
