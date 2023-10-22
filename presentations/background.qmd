@@ -207,14 +207,90 @@ summary(model1)
 
 Exploration and explaination
 
-- Using the model, we learn that there is some sort of relationship because there is a lower p-value, the adjusted R squared number is around 0.3 which shows there is some relationship but it may not be as strongly correlated to the number of wins a team has. The residual standard of error is is 3.6 which means this is a good comparison.  
+- Using the model, we learn that there is some sort of relationship because there is a lower p-value, the adjusted R squared number is around 0.08 which shows there is some relationship but it may not be as strongly correlated to the number of wins a team has. The residual standard of error is is 7.0 which means this is a good comparison.  
 
 Some further things I'm curious about are if having a certain astor could predict the number of wins a team could get. Essentially saying "having an astor over 0.7 for X games should result in X wins" 
 
 This may be a bit too complex to analyze. But could also be an obvious question that I may want to answer but dont know hwo to at this moment.
 
-
 Another question
 - Could I make a list of players' assist to turn over ratio and then make a beesworm plot (yes I looked ahead in the book) to find how point guards from a certain confernece ranked in the category? Maybe say Eliza Pinzan had a better Assist to turnover ratio in home games vs Aaway games. 
+
+
+Refining the data for the assignment due Oct. 22.
+
+comparing to the SEC
+```{r}
+#Southeastern Conference
+sec_teams <- c("Alabama", "Arkansas", "Auburn", "Florida", "Georgia", "Kentucky", "LSU", "Mississippi St.", "Missouri", "Ole Miss", "South Carolina", "Tennessee", "Texas A&M", "Vanderbilt")
+
+sec <- joined_season_ator_winner %>% 
+filter(winner %in% sec_teams)
+
+# ACC
+acc_teams <- c(
+  "Boston College", "Clemson", "Duke", "Florida St.", "Georgia Tech", "Louisville", "Miami (FL)", "North Carolina", "NC State", "Pittsburgh", "Syracuse", "Virginia", "Virginia Tech", "Wake Forest")
+
+acc <- joined_season_ator_winner %>% 
+filter(winner %in% acc_teams)
+
+# Big 12
+ Big12 = c(
+    "Baylor", "Iowa State", "Kansas", "Kansas St.", "Oklahoma",
+    "Oklahoma St.", "TCU", "Texas", "Texas Tech", "West Virginia", "BYU", "Cincinnati", "UCF", "Houston", "Iowa St.")
+
+ Big12 <- joined_season_ator_winner %>% 
+filter(winner %in% Big12)
+ 
+#Pac 12
+  Pac12 = c(
+    "Arizona", "Arizona St.", "California", "Colorado", "Oregon",
+    "Oregon St.", "Stanford", "UCLA", "Southern California", "Utah", "Washington", "Washington St."
+  )
+  
+  Pac12 <- joined_season_ator_winner %>% 
+filter(winner %in% Pac12)
+
+  conferences_ator <- bind_rows(sec, b10, acc, Big12, Pac12)
+  view(conferences_ator)
+  
+  #Creating the confernece column
+  conferences_ator <- conferences_ator %>% 
+  mutate(conference = case_when(
+    winner %in% acc_teams ~ "ACC",
+    winner %in% big_ten ~ "Big Ten",
+    winner %in% sec_teams ~ "SEC",
+    winner %in% Pac12 ~ "Pac-12",
+    winner %in% Big12 ~ "Big 12",
+    TRUE ~ winner
+  ))
+```
+
+Each conferncee avg ator
+```{r}
+each_conf_ator <- conferences_ator %>% 
+group_by(conference) %>% 
+  summarize(avg_ator = mean(avg_ator),
+            avg_opp_ator = mean(avg_opp_ator)) %>% 
+  mutate(difference = avg_ator - avg_opp_ator) %>% 
+  arrange(desc(avg_ator))
+```
+It's a close race but teams in the Pac-12 had the highest ator last season. The Big Ten had the second highest. There are many talented guards in the Pac-12 and this is something I can look further into later on. I'm curious if there would be any centers who had a particularly high ator or non-guards.
+
+scatter plot of powr five teams
+```{r}
+
+b10vp5_ator <- ggplot() +
+  geom_point(data = conferences_ator, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
+  geom_point(data = b10, aes(x = total_wins, y = avg_ator), color = "red") +
+  geom_smooth(data=conferences_ator, aes(x=total_wins, y=avg_ator), method="lm") +
+  labs(title = "Big Ten Wins vs. Power 5 teams Average Assist to Turnover Ratio",
+       x = "Total Wins",
+       y = "Team Assist to Turnover Ratio")
+  geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))
+
+
+```
+The results of this scatter plot are that Big 10 teams are still pretty spread out but many of them have a high ator. Iowa was the only Big Ten team with over 30 wins 
 
 
