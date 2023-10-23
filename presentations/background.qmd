@@ -323,8 +323,7 @@ Its best ator was a game agaisnt UCF when it had an ator of a 4.0 which is huge.
 
 Its highest allowed ator was a mid-November against Indiana who finsihed with a 2.0 and a 12-point win. Maybe I should create a differential column to show point differential and see if ator is predictive in any way of a larger or smaller point differential as opposed to pure wins. The question here is "Does having a high ator predict if a team will have a large point differential in wins.
 
-Oregon is the team with the highest avg ator at 1.65 and it earned them 20 wins last season.
-It had 15 games last year where it finished north of that aveage and it resulted in nine wins. 
+Oregon is the power 5 team with the highest avg ator at 1.65 and it earned them 20 wins last season. It had 15 games last year where it finished north of that aveage and it resulted in nine wins. 
 ```{r}
 ore <- ator_only %>% 
   filter(home_team_name == "Oregon" | away_team_name == "Oregon")
