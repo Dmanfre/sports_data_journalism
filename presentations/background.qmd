@@ -400,7 +400,15 @@ Further conserns:
 
 - Should I look at the ator's in different scenarios? Or is that straying away from my objective
 
+- I noticed that Northwestern (IA) only shows up once in the entire dataset. This potentially throws things off. Unsure of how to approach it because it shows they had a 2.4 ator which is fairly good but if there is only one game in there for them... it's problematic
 
+```{r}
+
+ator_only %>% 
+  filter(home_team_name == "Northwestern (IA)" | away_team_name == "Northwestern (IA)") %>% 
+  arrange(gamedate_east)
+
+```
 
 
 
