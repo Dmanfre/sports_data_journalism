@@ -252,11 +252,11 @@ filter(winner %in% Big12)
   Pac12 <- joined_season_ator_winner %>% 
 filter(winner %in% Pac12)
 
-  conferences_ator <- bind_rows(sec, b10, acc, Big12, Pac12)
-  view(conferences_ator)
+  p5_teams_ator <- bind_rows(sec, b10, acc, Big12, Pac12)
+  view(p5_teams_ator)
   
   #Creating the confernece column
-  conferences_ator <- conferences_ator %>% 
+  p5_teams_ator <- p5_teams_ator %>% 
   mutate(conference = case_when(
     winner %in% acc_teams ~ "ACC",
     winner %in% big_ten ~ "Big Ten",
@@ -269,7 +269,7 @@ filter(winner %in% Pac12)
 
 Each conferncee avg ator
 ```{r}
-each_conf_ator <- conferences_ator %>% 
+each_conf_ator <- p5_teams_ator %>% 
 group_by(conference) %>% 
   summarize(avg_ator = mean(avg_ator),
             avg_opp_ator = mean(avg_opp_ator)) %>% 
@@ -282,9 +282,9 @@ scatter plot of powr five teams vs. the big ten
 ```{r}
 
 b10vp5_ator <- ggplot() +
-  geom_point(data = conferences_ator, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
+  geom_point(data = p5_teams_ator, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
   geom_point(data = b10, aes(x = total_wins, y = avg_ator), color = "red") +
-  geom_smooth(data=conferences_ator, aes(x=total_wins, y=avg_ator), method="lm") +
+  geom_smooth(data=p5_teams_ator, aes(x=total_wins, y=avg_ator), method="lm") +
   labs(title = "Big Ten Wins vs. Power 5 teams Average Assist to Turnover Ratio",
        x = "Total Wins",
        y = "Team Assist to Turnover Ratio") +
@@ -294,16 +294,18 @@ b10vp5_ator <- ggplot() +
 big ten vs. SEC comparison
 ```{r}
 b10vsec <- ggplot() +
-  geom_point(data = conferences_ator, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
+  geom_point(data = p5_teams_ator, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
   geom_point(data = b10, aes(x = total_wins, y = avg_ator), color = "red") +
   geom_point(data = sec, aes(x = total_wins, y = avg_ator), color = "blue") +
-  geom_smooth(data=conferences_ator, aes(x=total_wins, y=avg_ator), method="lm") +
+  geom_smooth(data=p5_teams_ator, aes(x=total_wins, y=avg_ator), method="lm") +
   labs(title = "Teams with strong guard depth have higher Assist to Turnover Ratios",
        subtitle = "Big Ten teams listed in red, SEC listed in blue.",
        x = "Total Wins",
        y = "Team Assist to Turnover Ratio") +
   geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))+
   geom_text_repel(data = sec, aes(x = total_wins, y = avg_ator, label = winner))
+
+
 ```
 The results of these two scatter plots are interesting. The Big 10 teams are still pretty spread out but many of them have a high ator. Iowa was the only Big Ten team with over 30 wins. Tennessee is very interesting as a power five team nearly at the 1.5 ator mark especially since the SEC is toward the bottom fo the conference rankings.
 
@@ -315,9 +317,7 @@ Tennesee is still interesting to me. I want to see what their ator was in their 
 ```{r}
 #Can use this code to show other team's game-by-game breakdowwn. 
 tenn <-  ator_only %>% 
-  filter(home_team_name == "Tennessee" | away_team_name == "Tennessee") %>% 
-  select(gamedate_east, home_team_name, pts, away_team_name, opp_pts, winner, ast, tov, opp_ast, opp_tov, team_ator, opp_ator, difference)
-
+  filter(home_team_name == "Tennessee" | away_team_name == "Tennessee") 
 ```
 Its best ator was a game agaisnt UCF when it had an ator of a 4.0 which is huge. They had 24 assits that game. UCF only had 11 assists and 15 turnovers. That particular game displayed what Tennessee is able to do on defense and how it can capitalize off opponents mistakes. 
 
