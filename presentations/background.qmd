@@ -393,11 +393,13 @@ ator_only %>%
 
 ```
 
-
 Further conserns:
-- My one main gripe is that I feel I'm being too trivial at this stage. I feel as though I'm trying to find the answer to soemthing instead of prove a point which originally is that having a good assist to turnover ratio leads to more wins.
+- My one main gripe is that I feel I'm being too trivial at this stage. I feel as though I'm trying to find the answer to something instead of prove a point which originally is that having a good assist to turnover ratio leads to more wins.
 
 - How can I get to a spot of beginning to prove my point?
+
+- Should I look at the ator's in different scenarios? Or is that straying away from my objective
+
 
 
 
