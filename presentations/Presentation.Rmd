@@ -1,0 +1,47 @@
+---
+name: Dylan Manfre
+title: Does having a good assist to turnover ratio really lead to wins?
+
+---
+
+Notes
+- Make a bubble chart with team_ator, opp_ator, scale = wins
+- Work on establishing the time element earlier in the narrative.
+
+
+```{r}
+#libraries
+library(tidyverse)
+library(lubridate)
+library(janitor)
+#install.packages("wehoop")
+library(wehoop)
+library(tictoc)
+library(ggplot2)
+#install.packages("ggrepel")
+library(ggrepel)
+
+
+```
+
+```{r}
+# loading data from Her Hoops Stats library
+game_boxes_with_teams <- read_csv("game_boxes_with_teams.csv")
+View(game_boxes_with_teams)
+
+```
+
+Star the narrative here
+
+Lede: Fans who listened to Maryland women's basketball head coach Brenda Frese's interviews last season heard the veteran coach say the words assist to turnover ratio. A basketball metric which divides assists by turnovers.
+
+Maryland advanced to the Elite Eight last year on a 1.4 assist to turnover ratio which was eighth best among power 5 teams. 
+
+
+
+
+
+
+
+
+

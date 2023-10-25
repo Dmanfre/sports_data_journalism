@@ -9,29 +9,22 @@ name: Dylan Manfre
 
 Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
 
-
-
 Story idea: I will be doing story idea No. 1 about whether having a good assist-to-turnover ratio actually leads to more wins and analyzing if it is a good measure of team success.
 
 Questions in Canvas assignment
 
-1) Does that data already exist? Can you get it?
-2) Do you need assistance in getting it?
-3) What time frame do you want/need data from?
-4) Will you have to improve or augment the data in order to answer your question? If so, how?
-5) Are there other examples of this kind of work (specific or general)? If so, provide them.
+1)  Does that data already exist? Can you get it?
+2)  Do you need assistance in getting it?
+3)  What time frame do you want/need data from?
+4)  Will you have to improve or augment the data in order to answer your question? If so, how?
+5)  Are there other examples of this kind of work (specific or general)? If so, provide them.
 
-Response
-1) The data does exist. I can use box score data and game logs from women's college basketball games. I believe I can get this through the sportsdataverse or a wehoops R package which already has the data inside of it.
-2) I may need a little assistace getting the data because there will likely be multiple files that are similar but finding the right one for this analysis is essential to the project.
-3) I would like to use data from last season 2022-23. I think this would be a good time frame to use because Brenda Frese talked about how having an assist-to-turnover ratio was essential to the team's success. I'm wondering if a text analysis could be a good part of this project to see exactly how many times she said the phrase "assist-to-turnover" ratio last season.
-4) I don't believe there will be too much to agument. Unless the dataset does not already have an assist-to-turnover ratio column. If that is not there, I would need to create it by doing a mutate(ATo_ratio = sum(assits) / sum(Turnovers) * 100). Then I would need to calculate a linear model and 
-5) Haven't found many articles outlining an analysis in the form of a narrative story but there have been smaller articles. 
-https://statathlon.com/team_stats_analysing_impact/#:~:text=That%20the%20assist%20to%20turnover,is%20not%20always%20the%20rule.
+Response 1) The data does exist. I can use box score data and game logs from women's college basketball games. I believe I can get this through the sportsdataverse or a wehoops R package which already has the data inside of it. 2) I may need a little assistace getting the data because there will likely be multiple files that are similar but finding the right one for this analysis is essential to the project. 3) I would like to use data from last season 2022-23. I think this would be a good time frame to use because Brenda Frese talked about how having an assist-to-turnover ratio was essential to the team's success. I'm wondering if a text analysis could be a good part of this project to see exactly how many times she said the phrase "assist-to-turnover" ratio last season. 4) I don't believe there will be too much to agument. Unless the dataset does not already have an assist-to-turnover ratio column. If that is not there, I would need to create it by doing a mutate(ATo_ratio = sum(assits) / sum(Turnovers) \* 100). Then I would need to calculate a linear model and 5) Haven't found many articles outlining an analysis in the form of a narrative story but there have been smaller articles. https://statathlon.com/team_stats_analysing_impact/#:\~:text=That%20the%20assist%20to%20turnover,is%20not%20always%20the%20rule.
 
 ```{r}
 #libraries
 library(tidyverse)
+library(lubridate)
 library(janitor)
 #install.packages("wehoop")
 library(wehoop)
@@ -43,7 +36,6 @@ library(ggrepel)
 
 ```
 
-
 ```{r}
 # loading data from wehoops library
 
@@ -53,6 +45,7 @@ View(game_boxes_with_teams)
 ```
 
 cleaning
+
 ```{r}
 #column rename
 
@@ -60,7 +53,10 @@ game_boxes_with_teams <- game_boxes_with_teams %>%
   rename( team_ator = ast_tov_ratio,
           opp_ator = opp_ast_tov_ratio,
           win_loss = win)
+```
 
+
+```{r}
 #fiter out NAs
 game_boxes_with_teams <- game_boxes_with_teams %>%
   filter(!is.na(team_ator))
@@ -70,18 +66,23 @@ game_boxes_with_teams <- game_boxes_with_teams %>%
   mutate(winner = ifelse(opp_pts > pts, away_team_name, home_team_name),
          difference = pts - opp_pts)
 
+game_boxes_with_teams <- game_boxes_with_teams %>%
+  mutate(winning_team_conference = if_else(pts > opp_pts, home_team_conference, away_team_conference))
+
+
 #make sure it worked
 winner_loser <- game_boxes_with_teams %>% 
-  select(home_team_name, pts, away_team_name, opp_pts, winner)
+  select(home_team_name, home_team_conference, pts, away_team_name, away_team_conference, opp_pts, winner, difference)
 
 #picking columns I want
 ator_only <- game_boxes_with_teams %>% 
-    select(gamedate_east, home_team_name, pts, away_team_name, opp_pts, winner, ast, tov, opp_ast, opp_tov, team_ator, opp_ator, difference)
+    select(gamedate_east, home_team_name, home_team_conference, pts, away_team_name, away_team_conference, opp_pts, winner, ast, tov, opp_ast, opp_tov, team_ator, opp_ator, difference)
 
 View(ator_only)
 ```
 
 Lists
+
 ```{r}
 
 big_ten <- c("Indiana", "Maryland", "Michigan", "Michigan St.", "Minnesota", "Nebraska", "Northwestern", "Ohio St.", "Penn St.", "Purdue", "Rutgers", "Illinois", "Iowa", "Wisconsin")
@@ -91,31 +92,29 @@ power_5 <- c("ACC", "Big 12", "Big Ten", "Pac-12", "SEC")
 
 ```
 
+Hypothesis: Having an assist-to-turnover ratio over 2 leads to moe wins.
 
-
-Hypothesis: Having an assist-to-turnover ratio over 2 leads to moe wins. 
-
-What I want to do is see the percentage of games that had an assist to turnover ratio of a certain number and then generate a percentage of those games that resulted in wins and those that resulted in loses. 
+What I want to do is see the percentage of games that had an assist to turnover ratio of a certain number and then generate a percentage of those games that resulted in wins and those that resulted in loses.
 
 # The average team astor is 0.9717791 I will use this number to base my filter
-# The average opp astor is 0.7773279 I will use this number to base my filter of the opponents.
 
+# The average opp astor is 0.7773279 I will use this number to base my filter of the opponents.
 
 ```{r}
 game_boxes_with_teams %>%
   summarize(Average_ator = mean(team_ator),
-    Average_oppAToR = mean(opp_ator)
+    Average_opp_ator = mean(opp_ator)
   )
 
 game_boxes_with_teams %>% 
 filter(team_ator >= 0.97)
 
 ```
+
 6,243 games resulted in wins with teams that had an astor over 0.97.
 
-
-
 Number of teams with a greater ator than opponent
+
 ```{r}
 
 game_boxes_with_teams %>% 
@@ -139,14 +138,14 @@ group_by(winner) %>%
  summarize(count = n()) %>%  
 arrange(desc(count))
 
-#Confirm this worked.
 ```
 
-I am only focused on wins. 
+I am only focused on wins.
 
 I want to to identify the average astor's in wins and loses.
 
-Analysis: 
+Analysis:
+
 ```{r}
 season_ator_winners <- game_boxes_with_teams %>%
   group_by(winner) %>% 
@@ -162,11 +161,12 @@ joined_season_ator_winner <- joined_season_ator_winner %>%
 
 ```
 
-Also curious to see what team had the most games with an above average AToR... this could be a graph I think... use a scatter plot the code is in the textbook. 
+Also curious to see what team had the most games with an above average AToR... this could be a graph I think... use a scatter plot the code is in the textbook.
 
-Then look at any outliers. 
+Then look at any outliers.
 
-joined_season_ator_winner is a dataframe showing the number of wins and team's avg ator for the season. I want to filter this so that teams in the Big Ten are highlighted. 
+joined_season_ator_winner is a dataframe showing the number of wins and team's avg ator for the season. I want to filter this so that teams in the Big Ten are highlighted.
+
 ```{r}
 b10 <- joined_season_ator_winner %>% 
 filter(winner %in% big_ten)
@@ -174,6 +174,7 @@ filter(winner %in% big_ten)
 ```
 
 Just the big ten
+
 ```{r}
 ggplot(data = joined_season_ator_winner, aes(x = total_wins, y = avg_ator)) +
   geom_point(data = b10, aes(x = total_wins, y = avg_ator)) +
@@ -184,8 +185,8 @@ ggplot(data = joined_season_ator_winner, aes(x = total_wins, y = avg_ator)) +
 
 ```
 
-Showing the big ten among everyone else. 
-the lowering of the opasity was done via chat gpt
+Showing the big ten among everyone else. the lowering of the opasity was done via chat gpt
+
 ```{r}
 ggplot() +
   geom_point(data = joined_season_ator_winner, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
@@ -197,7 +198,9 @@ ggplot() +
   geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))
 
 ```
-We see a left to right line here climbing up suggesting that there is a relationship. Creating the model 
+
+We see a left to right line here climbing up suggesting that there is a relationship. Creating the model
+
 ```{r}
 
 model1 <- lm(total_wins ~ avg_ator, data = joined_season_ator_winner)
@@ -205,69 +208,73 @@ summary(model1)
 
 ```
 
-
 Exploration and explaination
 
-- Using the model, we learn that there is some sort of relationship because there is a lower p-value, the adjusted R squared number is around 0.08 which shows there is some relationship but it may not be as strongly correlated to the number of wins a team has. The residual standard of error is is 7.0 which means this is a good comparison.  
+-   Using the model, we learn that there is some sort of relationship because there is a lower p-value, the adjusted R squared number is around 0.08 which shows there is some relationship but it may not be as strongly correlated to the number of wins a team has. The residual standard of error is is 7.0 which means this is a good comparison.
 
-Some further things I'm curious about are if having a certain astor could predict the number of wins a team could get. Essentially saying "having an astor over 0.7 for X games should result in X wins" 
+Some further things I'm curious about are if having a certain astor could predict the number of wins a team could get. Essentially saying "having an astor over 0.7 for X games should result in X wins"
 
 This may be a bit too complex to analyze. But could also be an obvious question that I may want to answer but dont know hwo to at this moment.
 
-Another question
-- Could I make a list of players' assist to turn over ratio and then make a beesworm plot (yes I looked ahead in the book) to find how point guards from a certain confernece ranked in the category? Maybe say Eliza Pinzan had a better Assist to turnover ratio in home games vs Aaway games. 
-
+Another question - Could I make a list of players' assist to turn over ratio and then make a beesworm plot (yes I looked ahead in the book) to find how point guards from a certain confernece ranked in the category? Maybe say Eliza Pinzan had a better Assist to turnover ratio in home games vs Aaway games.
 
 Refining the data for the assignment due Oct. 22.
 
-comparing to the SEC
 ```{r}
-#Southeastern Conference
-sec_teams <- c("Alabama", "Arkansas", "Auburn", "Florida", "Georgia", "Kentucky", "LSU", "Mississippi St.", "Missouri", "Ole Miss", "South Carolina", "Tennessee", "Texas A&M", "Vanderbilt")
 
-sec <- joined_season_ator_winner %>% 
-filter(winner %in% sec_teams)
+  BigTen = c(
+    "Illinois", "Indiana", "Iowa", "Maryland", "Michigan",
+    "Michigan St.", "Minnesota", "Nebraska", "Northwestern", "Ohio St.",
+    "Penn St.", "Purdue", "Rutgers", "Wisconsin")
 
-# ACC
-acc_teams <- c(
+
+ acc_teams <- c(
   "Boston College", "Clemson", "Duke", "Florida St.", "Georgia Tech", "Louisville", "Miami (FL)", "North Carolina", "NC State", "Pittsburgh", "Syracuse", "Virginia", "Virginia Tech", "Wake Forest")
 
-acc <- joined_season_ator_winner %>% 
+ acc <- joined_season_ator_winner %>% 
 filter(winner %in% acc_teams)
 
-# Big 12
+  sec_teams = c(
+    "Alabama", "Arkansas", "Auburn", "Florida", "Georgia", "Kentucky",
+    "LSU", "Mississippi St.", "Missouri", "Ole Miss", "South Carolina", "Tennessee", "Texas A&M", "Vanderbilt")
+  
+    sec <- joined_season_ator_winner %>% 
+filter(winner %in% sec_teams)
+
  Big12 = c(
     "Baylor", "Iowa State", "Kansas", "Kansas St.", "Oklahoma",
     "Oklahoma St.", "TCU", "Texas", "Texas Tech", "West Virginia", "BYU", "Cincinnati", "UCF", "Houston", "Iowa St.")
 
- Big12 <- joined_season_ator_winner %>% 
+Big12 <- joined_season_ator_winner %>% 
 filter(winner %in% Big12)
  
-#Pac 12
+
   Pac12 = c(
     "Arizona", "Arizona St.", "California", "Colorado", "Oregon",
     "Oregon St.", "Stanford", "UCLA", "Southern California", "Utah", "Washington", "Washington St."
   )
-  
+   
   Pac12 <- joined_season_ator_winner %>% 
 filter(winner %in% Pac12)
-
-  p5_teams_ator <- bind_rows(sec, b10, acc, Big12, Pac12)
-  view(p5_teams_ator)
-  
-  #Creating the confernece column
-  p5_teams_ator <- p5_teams_ator %>% 
-  mutate(conference = case_when(
-    winner %in% acc_teams ~ "ACC",
-    winner %in% big_ten ~ "Big Ten",
-    winner %in% sec_teams ~ "SEC",
-    winner %in% Pac12 ~ "Pac-12",
-    winner %in% Big12 ~ "Big 12",
-    TRUE ~ winner
-  ))
 ```
 
-Each conferncee avg ator
+
+```{r}
+p5_teams_ator <- bind_rows(sec, b10, acc, Big12, Pac12)
+   view(p5_teams_ator)
+   
+  p5_teams_ator <- p5_teams_ator %>% 
+   mutate(conference = case_when(
+     winner %in% acc_teams ~ "ACC",
+     winner %in% big_ten ~ "Big Ten",
+    winner %in% sec_teams ~ "SEC",
+    winner %in% Pac12 ~ "Pac-12",
+    winner %in% Big12 ~ "Big 12"
+  ))
+
+```
+
+
 ```{r}
 each_conf_ator <- p5_teams_ator %>% 
 group_by(conference) %>% 
@@ -275,10 +282,12 @@ group_by(conference) %>%
             avg_opp_ator = mean(avg_opp_ator)) %>% 
   mutate(difference = avg_ator - avg_opp_ator) %>% 
   arrange(desc(avg_ator))
+
 ```
 It's a close race but teams in the Pac-12 had the highest ator last season. The Big Ten had the second highest. There are many talented guards in the Pac-12 and this is something I can look further into later on. I'm curious if there would be any centers who had a particularly high ator or non-guards.
 
-scatter plot of powr five teams vs. the big ten
+scatter plot of power five teams vs. the big ten
+
 ```{r}
 
 b10vp5_ator <- ggplot() +
@@ -292,6 +301,7 @@ b10vp5_ator <- ggplot() +
 ```
 
 big ten vs. SEC comparison
+
 ```{r}
 b10vsec <- ggplot() +
   geom_point(data = p5_teams_ator, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
@@ -307,23 +317,27 @@ b10vsec <- ggplot() +
 
 
 ```
+
 The results of these two scatter plots are interesting. The Big 10 teams are still pretty spread out but many of them have a high ator. Iowa was the only Big Ten team with over 30 wins. Tennessee is very interesting as a power five team nearly at the 1.5 ator mark especially since the SEC is toward the bottom fo the conference rankings.
 
-Also, LOL Rutgers. There's your Jersey dig for this assignment. Have a laugh. South Carolina and LSU are interesting to me because while they won a ton, they had a lower ator than Iowa by a lot. Is that a coaching philosophy difference? Iowa, because of Caitlin Clark and Gabby Marshall, probably emphasize its gaurd play more than South Carolina. 
+Also, LOL Rutgers. There's your Jersey dig for this assignment. Have a laugh. South Carolina and LSU are interesting to me because while they won a ton, they had a lower ator than Iowa by a lot. Is that a coaching philosophy difference? Iowa, because of Caitlin Clark and Gabby Marshall, probably emphasize its gaurd play more than South Carolina.
 
 Ohio State, Indiana and Maryland also have strong guards so it makes sense why they have more wins and a higher ator.
 
 Tennesee is still interesting to me. I want to see what their ator was in their games.
+
 ```{r}
 #Can use this code to show other team's game-by-game breakdowwn. 
 tenn <-  ator_only %>% 
   filter(home_team_name == "Tennessee" | away_team_name == "Tennessee") 
 ```
-Its best ator was a game agaisnt UCF when it had an ator of a 4.0 which is huge. They had 24 assits that game. UCF only had 11 assists and 15 turnovers. That particular game displayed what Tennessee is able to do on defense and how it can capitalize off opponents mistakes. 
+
+Its best ator was a game agaisnt UCF when it had an ator of a 4.0 which is huge. They had 24 assits that game. UCF only had 11 assists and 15 turnovers. That particular game displayed what Tennessee is able to do on defense and how it can capitalize off opponents mistakes.
 
 Its highest allowed ator was a mid-November against Indiana who finsihed with a 2.0 and a 12-point win. Maybe I should create a differential column to show point differential and see if ator is predictive in any way of a larger or smaller point differential as opposed to pure wins. The question here is "Does having a high ator predict if a team will have a large point differential in wins.
 
-Oregon is the power 5 team with the highest avg ator at 1.65 and it earned them 20 wins last season. It had 15 games last year where it finished north of that aveage and it resulted in nine wins. 
+Oregon is the power 5 team with the highest avg ator at 1.65 and it earned them 20 wins last season. It had 15 games last year where it finished north of that aveage and it resulted in nine wins.
+
 ```{r}
 ore <- ator_only %>% 
   filter(home_team_name == "Oregon" | away_team_name == "Oregon")
@@ -338,13 +352,14 @@ ator_only %>%
 
 ```
 
-Here, I want to visualize Oregon's team ator. A handful of games, Oregon is under a 2.0 ator, which is common for most teams. However, we see a sharp decline in its team ator in January. 
+Here, I want to visualize Oregon's team ator. A handful of games, Oregon is under a 2.0 ator, which is common for most teams. However, we see a sharp decline in its team ator in January.
 
 ```{r}
 ggplot() + geom_line(data=ore, aes(x=gamedate_east, y=team_ator))
 ```
 
-Looking at Oregon's January games, the Ducks won half of its games going 4-8. The ator was decent but compared to the rest of the season, January was Oregon's worst month because it had a handful of games under a 2.0. 
+Looking at Oregon's January games, the Ducks won half of its games going 4-8. The ator was decent but compared to the rest of the season, January was Oregon's worst month because it had a handful of games under a 2.0.
+
 ```{r}
 #Used ChatGPT for this code because I had a brain fart. 
 
@@ -356,10 +371,12 @@ ore %>%
 ```
 
 Viewing the ators as a line graph. I want to see if there is a month where teams are above a certain point or under.
+
 ```{r}
 
 ggplot() + geom_line(data=ator_only, aes(x=gamedate_east, y=team_ator))
 ```
+
 # The massive spike is from Berea from a game on 2023-02-01 when it had 28 assists and 1 turnover in a 68 point win over Wesleyan (GA).
 
 # This entry really skews my data. I put a limit on the chart to eliminate that game. The highest ator is a 8.5
@@ -367,7 +384,8 @@ ggplot() + geom_line(data=ator_only, aes(x=gamedate_east, y=team_ator))
 ```{r}
 ggplot() + geom_line(data=ator_only, aes(x=gamedate_east, y=team_ator))+ scale_y_continuous(limits = c(0, 10))
 ```
-Creating the average ator and putting it in the chart. 
+
+Creating the average ator and putting it in the chart.
 
 ```{r}
 average <- ator_only %>% 
@@ -375,9 +393,10 @@ average <- ator_only %>%
   summarise(avg_ator=mean(team_ator))
 ```
 
-The slight gap between the end of December and the beginning of January is interesting because it flat lines for a bit. 
+The slight gap between the end of December and the beginning of January is interesting because it flat lines for a bit.
 
-I highlighted Oregon on this chart in green. Even though Oregon had its worst ator in January, it's still above average. The majority of its games are. 
+I highlighted Oregon on this chart in green. Even though Oregon had its worst ator in January, it's still above average. The majority of its games are.
+
 ```{r}
 ggplot() + 
   geom_line(data=ator_only, aes(x=gamedate_east, y=team_ator), color="grey") + 
@@ -392,23 +411,64 @@ ator_only %>%
 
 ```
 
-Further conserns:
-- My one main gripe is that I feel I'm being too trivial at this stage. I feel as though I'm trying to find the answer to something instead of prove a point which originally is that having a good assist to turnover ratio leads to more wins.
+Further conserns: - My one main gripe is that I feel I'm being too trivial at this stage. I feel as though I'm trying to find the answer to something instead of prove a point which originally is that having a good assist to turnover ratio leads to more wins.
 
-- How can I get to a spot of beginning to prove my point?
+-   How can I get to a spot of beginning to prove my point?
 
-- Should I look at the ator's in different scenarios? Or is that straying away from my objective
+-   Should I look at the ator's in different scenarios? Or is that straying away from my objective
 
-- I noticed that Northwestern (IA) only shows up once in the entire dataset. This potentially throws things off. Unsure of how to approach it because it shows they had a 2.4 ator which is fairly good but if there is only one game in there for them... it's problematic
+-   I noticed that Northwestern (IA) only shows up once in the entire dataset. This potentially throws things off. Unsure of how to approach it because it shows they had a 2.4 ator which is fairly good but if there is only one game in there for them... it's problematic
 
 ```{r}
-
 ator_only %>% 
   filter(home_team_name == "Northwestern (IA)" | away_team_name == "Northwestern (IA)") %>% 
   arrange(gamedate_east)
 
+# filtering out this game
+ator_only <- ator_only %>% 
+  filter(!(home_team_name == "Northwestern (IA)" | away_team_name == "Northwestern (IA)")) %>% 
+  arrange(gamedate_east)
+
 ```
 
+Looking at each conferences ator
+
+```{r}
+
+all_conf_ator <- game_boxes_with_teams %>% 
+  group_by(winning_team_conference) %>% 
+  summarize(avg_ator = mean(team_ator)) %>% 
+  arrange(desc(avg_ator))
+
+```
+
+Next part of the assignment... work on digging into the time element of certain teams.
+
+extract month from date column and group by. 
+```{r}
+ator_only %>% 
+  mutate(month = month(gamedate_east)) %>% 
+  group_by(month) %>%
+  summarize(avg_ator = mean(team_ator))
+```
+March seems to have the strongest team_ator
+
+Looking at Tennessee's ator over time
+```{r}
+tenn %>% 
+  mutate(month = month(gamedate_east)) %>% 
+  group_by(month) %>%
+  summarize(avg_ator = mean(team_ator))
+
+```
+Tennessee kept pretty consistent over time but got a bigger boost in December, second month of the season and typically the beginning of conference play. 
+
+```{r}
+
+ggplot() + geom_line(data=tenn, aes(x=gamedate_east, y=team_ator))
+
+
+```
 
 
 
