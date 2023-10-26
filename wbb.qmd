@@ -6,14 +6,18 @@ editor: visual
 
 Lesson on Simulations chapter 14 in the book.
 
-
 ```{r}
 library(tidyverse)
+install.packages("ggbeeswarm")
+library(ggbeeswarm)
+library(ggrepel)
+set.seed(1234)
 ```
 
 Simulations allow us to say what we expect distribution of results to be
 
 This says hey run me some simulations and use rbinomial. N is the number of simulations. size is the the number of something happening and the prob is the percentage. This says 1000 simulations, doing 20 shows, how many times will she make 5
+
 ```{r}
 set.seed(1234)
 
@@ -24,10 +28,11 @@ table(simulations)
 #top line is the number of makes. the bottom line is the number of times that outcome happens.
 #The changes of 13 or more are next to 0. 
 ```
-We think about this in terms of how often something happens or how unlikely something is to happen. 
 
+We think about this in terms of how often something happens or how unlikely something is to happen.
 
 Cold Streaks
+
 ```{r}
 
 set.seed(1234)
@@ -40,9 +45,11 @@ hist(simulations)
 
 table(simulations)
 ```
+
 streaks across time
 
-the lead functions allows you to look at the next record. 
+the lead functions allows you to look at the next record.
+
 ```{r}
 
 library(dplyr)
@@ -56,9 +63,8 @@ four_in_a_row <- mean(simulations == 1 & lead(simulations, 1) == 1 & lead(simula
 odds <- 1/four_in_a_row
 ```
 
+stewie's percetnage .465 It would happen 10 times over 1000 where she would shoot 3-17
 
-stewie's percetnage .465
-It would happen 10 times over 1000 where she would shoot 3-17
 ```{r}
 set.seed(1234)
 
@@ -68,16 +74,95 @@ table(simulations)
 ```
 
 
+Beesworm plots form Oct. 25 lesson
 
+```{r}
+players <- read_csv("https://thescoop.org/sports-data-files/wbb_players_2023.csv")
+```
 
+```{r}
+activeplayers <- players |> filter( mp > 0, position != "NULL") 
+```
 
+```{r}
+activeplayers <- activeplayers |> mutate(tspct=pts/(2*(fga+0.44*fta)))
+```
 
+focusing on players who shoot a lot
 
+Summary calculates quartiles
+```{r}
+summary(activeplayers$fga)
+```
 
+```{r}
+shooters <- activeplayers |> filter(fga > 187)
+```
 
+making the beesworm plot
+```{r}
+ggplot() + geom_beeswarm(data=shooters, aes(x=position, y=tspct), color="grey")
+```
+```{r}
+umd <- activeplayers |> 
+  filter(team == "Maryland") |> 
+  filter(fga>187) |> 
+  arrange(desc(tspct))
+```
 
+```{r}
+ggplot() + 
+  geom_beeswarm(
+    data=shooters, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="grey") + 
+  geom_beeswarm(
+    data=umd, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="red")
+```
 
-
-
+```{r}
+ggplot() + 
+  geom_beeswarm(
+    data=shooters, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="grey") + 
+  geom_beeswarm(
+    data=umd, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="red") +
+  geom_text_repel(
+    data=umd, 
+    aes(x=position, y=tspct, label=player))
+```
+geom quasi random
+```{r}
+ggplot() + 
+  geom_quasirandom(
+    data=shooters, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="grey") + 
+  geom_quasirandom(
+    data=umd, 
+    groupOnX=TRUE, 
+    aes(x=position, y=tspct), color="red") +
+  geom_text_repel(
+    data=umd, 
+    aes(x=position, y=tspct, label=player))
+```
+using geom_jitter
+```{r}
+ggplot() + 
+  geom_jitter(
+    data=shooters, 
+    aes(x=position, y=tspct), color="grey") + 
+  geom_jitter(
+    data=umd, 
+    aes(x=position, y=tspct), color="red") +
+  geom_text_repel(
+    data=umd, 
+    aes(x=position, y=tspct, label=player))
+```
 
 
