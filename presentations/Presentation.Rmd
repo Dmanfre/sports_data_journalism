@@ -7,7 +7,7 @@ title: Does having a good assist to turnover ratio really lead to wins?
 Notes
 - Make a bubble chart with team_ator, opp_ator, scale = wins
 - Work on establishing the time element earlier in the narrative.
-
+- Establish the main question to answer
 
 ```{r}
 #libraries
@@ -20,22 +20,77 @@ library(tictoc)
 library(ggplot2)
 #install.packages("ggrepel")
 library(ggrepel)
-
-
 ```
 
 ```{r}
 # loading data from Her Hoops Stats library
 game_boxes_with_teams <- read_csv("game_boxes_with_teams.csv")
 View(game_boxes_with_teams)
-
 ```
 
-Star the narrative here
+Establishing lists
+```{r}
+ acc_teams <- c(
+  "Boston College", "Clemson", "Duke", "Florida St.", "Georgia Tech", "Louisville", "Miami (FL)", "North Carolina", "NC State", "Pittsburgh", "Syracuse", "Virginia", "Virginia Tech", "Wake Forest")
 
-Lede: Fans who listened to Maryland women's basketball head coach Brenda Frese's interviews last season heard the veteran coach say the words assist to turnover ratio. A basketball metric which divides assists by turnovers.
+  sec_teams = c(
+    "Alabama", "Arkansas", "Auburn", "Florida", "Georgia", "Kentucky",
+    "LSU", "Mississippi St.", "Missouri", "Ole Miss", "South Carolina", "Tennessee", "Texas A&M", "Vanderbilt")
 
-Maryland advanced to the Elite Eight last year on a 1.4 assist to turnover ratio which was eighth best among power 5 teams. 
+ Big12 = c(
+    "Baylor", "Iowa State", "Kansas", "Kansas St.", "Oklahoma",
+    "Oklahoma St.", "TCU", "Texas", "Texas Tech", "West Virginia", "BYU", "Cincinnati", "UCF", "Houston", "Iowa St.")
+
+   Pac12 = c(
+    "Arizona", "Arizona St.", "California", "Colorado", "Oregon",
+    "Oregon St.", "Stanford", "UCLA", "Southern California", "Utah", "Washington", "Washington St."
+  )
+   
+big_ten <- c("Indiana", "Maryland", "Michigan", "Michigan St.", "Minnesota", "Nebraska", "Northwestern", "Ohio St.", "Penn St.", "Purdue", "Rutgers", "Illinois", "Iowa", "Wisconsin")
+
+power_5 <- c("ACC", "Big 12", "Big Ten", "Pac-12", "SEC")
+```
+
+Data cleaning
+```{r}
+#initial cleaning
+game_boxes_with_teams <- game_boxes_with_teams %>%
+  rename(
+    team_ator = ast_tov_ratio,
+    opp_ator = opp_ast_tov_ratio,
+    win_loss = win) %>%
+  filter(!is.na(team_ator) & !(home_team_name == "Northwestern (IA)" | away_team_name == "Northwestern (IA)")) %>%
+  mutate(
+    winner = ifelse(opp_pts > pts, away_team_name, home_team_name),
+    difference = pts - opp_pts,
+    winning_team_conference = if_else(pts > opp_pts, home_team_conference, away_team_conference))
+
+# making sure mutations worked
+winner_loser <- game_boxes_with_teams %>% 
+  select(home_team_name, home_team_conference, pts, away_team_name, away_team_conference, opp_pts, winner, difference)
+```
+The main question to answer: Do teams with higher assist to turn over ratios win more.
+Short answer: 
+
+
+Start the narrative here
+
+Lede: Fans who listened to Maryland women's basketball head coach Brenda Frese's interviews last season heard the veteran coach say the words assist to turnover ratio. A basketball metric which divides assists by turnovers and is indicative of a team's ball security. 
+
+Maryland advanced to the Elite Eight last year on a 1.4 assist to turnover ratio which was eighth best among power 5 teams and fourth in the Big Ten confernece. To get that number, I needed to make sure I understood what each team's assist to turnover ratio looked like. In a large dataset such as this one, trimming unnecessary columns made the work a lot easier.
+
+```{r}
+#picking columns I want
+ator_only <- game_boxes_with_teams %>% 
+    select(gamedate_east, home_team_name, home_team_conference, pts, away_team_name, away_team_conference, opp_pts, winner, ast, tov, opp_ast, opp_tov, team_ator, opp_ator, difference)
+```
+
+Now I have something to work with. ator_only, gives me the team, opponent, game result and both teams' ators as well as other stats I believer are important to the analysis. 
+
+
+
+
+
 
 
 

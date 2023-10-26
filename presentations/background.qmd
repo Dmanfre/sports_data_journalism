@@ -132,6 +132,7 @@ count()
 I want to see how many wins each team has.
 
 ```{r}
+# Need to keep 
 
 total_wins <- game_boxes_with_teams %>% 
 group_by(winner) %>% 
@@ -147,15 +148,17 @@ I want to to identify the average astor's in wins and loses.
 Analysis:
 
 ```{r}
+# Need to keep 
 season_ator_winners <- game_boxes_with_teams %>%
   group_by(winner) %>% 
   summarize(avg_ator = mean(team_ator),
     avg_opp_ator = mean(opp_ator)) %>% 
 arrange(desc(avg_ator))
 
-
+# Need to keep 
 joined_season_ator_winner <- inner_join(season_ator_winners, total_wins, by = "winner")
 
+# Need to keep 
 joined_season_ator_winner <- joined_season_ator_winner %>% 
   rename(total_wins = count)
 
