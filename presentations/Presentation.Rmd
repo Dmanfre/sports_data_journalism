@@ -67,7 +67,7 @@ game_boxes_with_teams <- game_boxes_with_teams %>%
 
 # making sure mutations worked
 winner_loser <- game_boxes_with_teams %>% 
-  select(home_team_name, home_team_conference, pts, away_team_name, away_team_conference, opp_pts, winner, difference)
+  select(home_team_name, home_team_conference, pts, away_team_name, away_team_conference, opp_pts, winner, winning_conference, difference)
 ```
 The main question to answer: Do teams with higher assist to turn over ratios win more.
 Short answer: 
@@ -82,7 +82,7 @@ Maryland advanced to the Elite Eight last year on a 1.4 assist to turnover ratio
 ```{r}
 #picking columns I want
 ator_only <- game_boxes_with_teams %>% 
-    select(gamedate_east, home_team_name, home_team_conference, pts, away_team_name, away_team_conference, opp_pts, winner, ast, tov, opp_ast, opp_tov, team_ator, opp_ator, difference)
+    select(gamedate_east, home_team_name, home_team_conference, pts, away_team_name, away_team_conference, opp_pts, winner, winning_conference, ast, tov, opp_ast, opp_tov, team_ator, opp_ator, difference)
 ```
 
 Now I have something to work with. ator_only, gives me the team, opponent, game result and both teams' ators as well as other stats I believer are important to the analysis. But we need a little more before we dive deep. We need to find out a team's total wins, their ators and opponents.
@@ -98,24 +98,40 @@ total_wins <- game_boxes_with_teams %>%
   ) %>%
   arrange(desc(avg_ator))
 ```
+Earlier in the season, a majority of teams had lower ators in November and December. It seems like teams did better in February and March, on average, which makes sense because they want to play better heading into the tournament make a good case for a high seed in the tournament. 
+
+```{r}
+#time element
+
+ator_only %>% 
+  mutate(month = month(gamedate_east)) %>% 
+  group_by(month) %>%
+  summarize(avg_ator = mean(team_ator),
+            avg_opp_ator = mean(opp_ator)) %>% 
+  arrange(desc(avg_ator))
+
+
+```
+
+
 
 We can make an early model to see if there is a possible relationship between a good ator and wins now that we have all the necessary components. A scatter plot is the best way to demonstrate this. We can contextualize this a bit more now that things are set up. Let's look at Maryland and see how its compared against the Big Ten and it's fellow power 5 schools. Knowing how Power 5 teams performed seems ideal for comparing Maryland because it's a majority of its competition.
 ```{r}
 p5_teams_ator <- ator_only %>% 
   filter(confernece %in% power_5)
 
-b10 <- joined_season_ator_winner %>% 
+b10 <- ator_only %>% 
 filter(winner %in% big_ten)
 ```
 
 The plot shows an upward slope which means there's at least some relationship between wins and a positive ator. So maybe Frese is on to something. 
 ```{r}
 ggplot() +
-  geom_point(data = joined_season_ator_winner, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
+  geom_point(data = ator_only, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
   geom_point(data = b10, aes(x = total_wins, y = avg_ator), color = "red") +
-  geom_smooth(data=joined_season_ator_winner, aes(x=total_wins, y=avg_ator), method="lm") +
+  geom_smooth(data=ator_only, aes(x=total_wins, y=avg_ator), method="lm") +
   labs(title = "Big Ten Wins vs. Average Assist to Turnover Ratio",
-       subtitle = "text here", 
+       subtitle = "Maryland is on the right side of the assist to turnover ratio.", 
        caption = "Source: Her Hoops Stats | Graphic by Dylan Manfre",
        x = "Total Wins",
        y = "Team Assist to Turnover Ratio") +
@@ -127,13 +143,36 @@ model1 <- lm(total_wins ~ avg_ator, data = total_wins)
 summary(model1)
 ```
 
-But lets spread it out over the course of the season.
+But lets spread it out over the course of the season. Filtering on a team's home and away name will show its full schedule. Nine of Maryland's highest team_ator's resulted in wins. The only loss was to Iowa in early March on the road. Even then, Maryland still had an ator of a 2 which is pretty respectable in Frese's eyes.
 
 ```{r}
-umd <- 
+ator_only %>% 
+  filter(home_team_name == "Maryland" | away_team_name == "Maryland") %>% 
+  select(gamedate_east, home_team_name, away_team_name, winner, team_ator, opp_ator) %>% 
+  arrange(desc(team_ator))
 ```
 
+In this bubble plot, I thought the SEC was interesting comparison, because like the Big Ten, its teams are spread around, but Tennessee stood out to me becasue of its placement. SEC teams seem to have a higher win count but lower ator.
 
+```{r}
+
+sec <- ator_only %>% 
+filter(winner %in% sec_teams)
+
+ggplot() +
+  geom_point(data = p5_teams_ator, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
+  geom_point(data = b10, aes(x = total_wins, y = avg_ator), color = "red") +
+  geom_point(data = sec, aes(x = total_wins, y = avg_ator), color = "blue") +
+  geom_smooth(data=ator_only, aes(x=total_wins, y=avg_ator), method="lm") +
+  labs(title = "Teams with strong guard depth have higher Assist to Turnover Ratios",
+       subtitle = "Big Ten teams listed in red, SEC listed in blue.",
+       x = "Total Wins",
+       y = "Team Assist to Turnover Ratio") +
+  geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))+
+  geom_text_repel(data = sec, aes(x = total_wins, y = avg_ator, label = winner))
+
+
+```
 
 
 
