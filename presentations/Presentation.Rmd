@@ -90,7 +90,7 @@ Now I have something to work with. ator_only, gives me the team, opponent, game 
 ```{r}
 #Total_wins
 total_wins <- game_boxes_with_teams %>%
-  group_by(winner) %>%
+  group_by(winner, winning_conference) %>%
   summarize(
     total_wins = n(),
     avg_ator = mean(team_ator),
@@ -118,26 +118,47 @@ ator_only %>%
 We can make an early model to see if there is a possible relationship between a good ator and wins now that we have all the necessary components. A scatter plot is the best way to demonstrate this. We can contextualize this a bit more now that things are set up. Let's look at Maryland and see how its compared against the Big Ten and it's fellow power 5 schools. Knowing how Power 5 teams performed seems ideal for comparing Maryland because it's a majority of its competition.
 ```{r}
 p5_teams_ator <- ator_only %>% 
-  filter(confernece %in% power_5)
+  filter(winning_conference %in% power_5)
 
-b10 <- ator_only %>% 
+b10 <- total_wins %>% 
 filter(winner %in% big_ten)
 ```
 
 The plot shows an upward slope which means there's at least some relationship between wins and a positive ator. So maybe Frese is on to something. 
 ```{r}
-ggplot() +
-  geom_point(data = ator_only, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
-  geom_point(data = b10, aes(x = total_wins, y = avg_ator), color = "red") +
-  geom_smooth(data=ator_only, aes(x=total_wins, y=avg_ator), method="lm") +
-  labs(title = "Big Ten Wins vs. Average Assist to Turnover Ratio",
+b10_only <- ggplot() +
+  geom_point(data = b10, aes(x = total_wins, y = avg_ator)) +
+  geom_smooth(data=total_wins, aes(x=total_wins, y=avg_ator), method="lm") +
+  labs(title = "Big Ten Wins agaisnt Average Assist to Turnover Ratio",
        subtitle = "Maryland is on the right side of the assist to turnover ratio.", 
        caption = "Source: Her Hoops Stats | Graphic by Dylan Manfre",
        x = "Total Wins",
        y = "Team Assist to Turnover Ratio") +
   geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))
 ```
-Readibng the model, we can see the low R-squared and residual standard of error means there is a relationship between the two factors. Doing a linear model was the best way to explain this relationship becasue it gets to what Frese claims: that having a good assist to turnover ratio leads to wins. Looking at the scatter plot, we ccan tell that Maryland is doing pretty good for itself in terms of proving Frese's theory that having a good ator leads to wins.
+Ask Iowa women's basketball head coach Lisa Bluder, and she'd agree with Brenda Frese. However, her Hawkeyes also have the highest opponent ator in the conference. But, the Hawkeyes also got 31 wins separating them from everyone else. 
+```{r}
+
+p5_conf <- p5_teams_ator %>%
+  group_by(winning_conference) %>% 
+  summarize(
+    count = n(),
+    avg_ator = mean(team_ator),
+    avg_opp_ator = mean(opp_ator)
+  ) %>%
+  arrange(desc(avg_ator))
+
+ggplot() + 
+  geom_point(
+    data=b10, 
+    aes(x=avg_ator, y=avg_opp_ator, size=total_wins))+
+  geom_text_repel(
+    data=b10, 
+    aes(x=avg_ator, y=avg_opp_ator, label=winner)
+  )
+```
+
+Reading the model, we can see the low R-squared and residual standard of error means there is a relationship between the two factors. Doing a linear model was the best way to explain this relationship becasue it gets to what Frese claims: that having a good assist to turnover ratio leads to wins. Looking at the scatter plot, we ccan tell that Maryland is doing pretty good for itself in terms of proving Frese's theory that having a good ator leads to wins.
 ```{r}
 model1 <- lm(total_wins ~ avg_ator, data = total_wins)
 summary(model1)
@@ -152,18 +173,16 @@ ator_only %>%
   arrange(desc(team_ator))
 ```
 
-In this bubble plot, I thought the SEC was interesting comparison, because like the Big Ten, its teams are spread around, but Tennessee stood out to me becasue of its placement. SEC teams seem to have a higher win count but lower ator.
+In this scatter plot, I thought the SEC was interesting comparison, because like the Big Ten, its teams are spread around, but Tennessee stood out to me because of its placement. SEC teams seem to have a higher win count but lower ator.
 
 ```{r}
-
-sec <- ator_only %>% 
+sec <- total_wins %>% 
 filter(winner %in% sec_teams)
 
-ggplot() +
-  geom_point(data = p5_teams_ator, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
+b10vSEC <- ggplot() +
   geom_point(data = b10, aes(x = total_wins, y = avg_ator), color = "red") +
   geom_point(data = sec, aes(x = total_wins, y = avg_ator), color = "blue") +
-  geom_smooth(data=ator_only, aes(x=total_wins, y=avg_ator), method="lm") +
+  geom_smooth(data=total_wins, aes(x=total_wins, y=avg_ator), method="lm") +
   labs(title = "Teams with strong guard depth have higher Assist to Turnover Ratios",
        subtitle = "Big Ten teams listed in red, SEC listed in blue.",
        x = "Total Wins",
@@ -171,9 +190,15 @@ ggplot() +
   geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))+
   geom_text_repel(data = sec, aes(x = total_wins, y = avg_ator, label = winner))
 
-
 ```
 
+Let's look into Tennessee.
+```{r}
+tenn <- ator_only %>% 
+  filter(home_team_name == "Tennessee" | away_team_name == "Tennessee") %>% 
+  select(gamedate_east, home_team_name, away_team_name, winner, team_ator, opp_ator) %>% 
+  arrange(desc(team_ator))
+```
 
 
 
