@@ -121,11 +121,33 @@ ggplot() +
        y = "Team Assist to Turnover Ratio") +
   geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))
 ```
-Readibng the model, we can see the low R-squared and residual standard of error means there is a relationship between the two factors. Doing a linear model was the best way to explain this relationship becasue it gets to what Frese claims: that having a good assist to turnover ratio leads to wins.
+Readibng the model, we can see the low R-squared and residual standard of error means there is a relationship between the two factors. Doing a linear model was the best way to explain this relationship becasue it gets to what Frese claims: that having a good assist to turnover ratio leads to wins. Looking at the scatter plot, we ccan tell that Maryland is doing pretty good for itself in terms of proving Frese's theory that having a good ator leads to wins.
 ```{r}
 model1 <- lm(total_wins ~ avg_ator, data = total_wins)
 summary(model1)
 ```
+
+But lets spread it out over the course of the season.
+
+```{r}
+umd <- 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
