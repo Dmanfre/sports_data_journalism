@@ -62,8 +62,8 @@ game_boxes_with_teams <- game_boxes_with_teams %>%
   filter(!is.na(team_ator) & !(home_team_name == "Northwestern (IA)" | away_team_name == "Northwestern (IA)")) %>%
   mutate(
     winner = ifelse(opp_pts > pts, away_team_name, home_team_name),
-    difference = pts - opp_pts,
-    winning_team_conference = if_else(pts > opp_pts, home_team_conference, away_team_conference))
+    winning_conference = ifelse(opp_pts > pts, away_team_conference, home_team_conference),
+    difference = pts - opp_pts)
 
 # making sure mutations worked
 winner_loser <- game_boxes_with_teams %>% 
@@ -85,9 +85,47 @@ ator_only <- game_boxes_with_teams %>%
     select(gamedate_east, home_team_name, home_team_conference, pts, away_team_name, away_team_conference, opp_pts, winner, ast, tov, opp_ast, opp_tov, team_ator, opp_ator, difference)
 ```
 
-Now I have something to work with. ator_only, gives me the team, opponent, game result and both teams' ators as well as other stats I believer are important to the analysis. 
+Now I have something to work with. ator_only, gives me the team, opponent, game result and both teams' ators as well as other stats I believer are important to the analysis. But we need a little more before we dive deep. We need to find out a team's total wins, their ators and opponents.
 
+```{r}
+#Total_wins
+total_wins <- game_boxes_with_teams %>%
+  group_by(winner) %>%
+  summarize(
+    total_wins = n(),
+    avg_ator = mean(team_ator),
+    avg_opp_ator = mean(opp_ator)
+  ) %>%
+  arrange(desc(avg_ator))
+```
 
+We can make an early model to see if there is a possible relationship between a good ator and wins now that we have all the necessary components. A scatter plot is the best way to demonstrate this. We can contextualize this a bit more now that things are set up. Let's look at Maryland and see how its compared against the Big Ten and it's fellow power 5 schools. Knowing how Power 5 teams performed seems ideal for comparing Maryland because it's a majority of its competition.
+```{r}
+p5_teams_ator <- ator_only %>% 
+  filter(confernece %in% power_5)
+
+b10 <- joined_season_ator_winner %>% 
+filter(winner %in% big_ten)
+```
+
+The plot shows an upward slope which means there's at least some relationship between wins and a positive ator. So maybe Frese is on to something. 
+```{r}
+ggplot() +
+  geom_point(data = joined_season_ator_winner, aes(x = total_wins, y = avg_ator), alpha = 0.2) +
+  geom_point(data = b10, aes(x = total_wins, y = avg_ator), color = "red") +
+  geom_smooth(data=joined_season_ator_winner, aes(x=total_wins, y=avg_ator), method="lm") +
+  labs(title = "Big Ten Wins vs. Average Assist to Turnover Ratio",
+       subtitle = "text here", 
+       caption = "Source: Her Hoops Stats | Graphic by Dylan Manfre",
+       x = "Total Wins",
+       y = "Team Assist to Turnover Ratio") +
+  geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))
+```
+Readibng the model, we can see the low R-squared and residual standard of error means there is a relationship between the two factors. Doing a linear model was the best way to explain this relationship becasue it gets to what Frese claims: that having a good assist to turnover ratio leads to wins.
+```{r}
+model1 <- lm(total_wins ~ avg_ator, data = total_wins)
+summary(model1)
+```
 
 
 

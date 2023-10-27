@@ -63,12 +63,10 @@ game_boxes_with_teams <- game_boxes_with_teams %>%
 
 #win columns
 game_boxes_with_teams <- game_boxes_with_teams %>% 
-  mutate(winner = ifelse(opp_pts > pts, away_team_name, home_team_name),
-         difference = pts - opp_pts)
-
-game_boxes_with_teams <- game_boxes_with_teams %>%
-  mutate(winning_team_conference = if_else(pts > opp_pts, home_team_conference, away_team_conference))
-
+  mutate(
+    winner = ifelse(opp_pts > pts, away_team_name, home_team_name),
+    winning_conference = ifelse(opp_pts > pts, away_team_conference, home_team_conference),
+    difference = pts - opp_pts)
 
 #make sure it worked
 winner_loser <- game_boxes_with_teams %>% 
