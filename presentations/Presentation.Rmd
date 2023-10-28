@@ -151,11 +151,12 @@ ggplot() +
   geom_text_repel(
     data=b10, 
     aes(x=avg_ator, y=avg_opp_ator, label=winner))+
-  labs(title="Big Ten at large proves ator leads to wins",
+  labs(title="Big Ten shows ator leads to wins",
        subtitle="Many Big Ten opponents also play efficient basketball",
        caption="Source: Her Hoops Stats | Graph by Dylan Manfre",
        x = "Average Team ator",
-       y = "Average Opponent ator")
+       y = "Average Opponent ator",
+       size = "Total Wins")
 ```
 It's a close race but teams in the Pac-12 had the highest ator last season. The Big Ten had the second highest. There are many talented guards in the Pac-12 and this is something I can look further into later on. I'm curious if there would be any centers who had a particularly high ator or non-guards.
 
