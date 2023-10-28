@@ -467,8 +467,6 @@ Tennessee kept pretty consistent over time but got a bigger boost in December, s
 ```{r}
 
 ggplot() + geom_line(data=tenn, aes(x=gamedate_east, y=team_ator))
-
-
 ```
 
 

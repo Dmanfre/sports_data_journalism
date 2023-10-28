@@ -101,18 +101,13 @@ total_wins <- game_boxes_with_teams %>%
 Earlier in the season, a majority of teams had lower ators in November and December. It seems like teams did better in February and March, on average, which makes sense because they want to play better heading into the tournament make a good case for a high seed in the tournament. 
 
 ```{r}
-#time element
-
-ator_only %>% 
+time_element <- ator_only %>% 
   mutate(month = month(gamedate_east)) %>% 
   group_by(month) %>%
   summarize(avg_ator = mean(team_ator),
             avg_opp_ator = mean(opp_ator)) %>% 
   arrange(desc(avg_ator))
-
-
 ```
-
 
 
 We can make an early model to see if there is a possible relationship between a good ator and wins now that we have all the necessary components. A scatter plot is the best way to demonstrate this. We can contextualize this a bit more now that things are set up. Let's look at Maryland and see how its compared against the Big Ten and it's fellow power 5 schools. Knowing how Power 5 teams performed seems ideal for comparing Maryland because it's a majority of its competition.
@@ -133,8 +128,8 @@ b10_only <- ggplot() +
        subtitle = "Maryland is on the right side of the assist to turnover ratio.", 
        caption = "Source: Her Hoops Stats | Graphic by Dylan Manfre",
        x = "Total Wins",
-       y = "Team Assist to Turnover Ratio") +
-  geom_text_repel(data = b10, aes(x = total_wins, y = avg_ator, label = winner))
+       y = "Team Assist to Turnover Ratio") 
+
 ```
 Ask Iowa women's basketball head coach Lisa Bluder, and she'd agree with Brenda Frese. However, her Hawkeyes also have the highest opponent ator in the conference. But, the Hawkeyes also got 31 wins separating them from everyone else. 
 ```{r}
@@ -148,15 +143,18 @@ p5_conf <- p5_teams_ator %>%
   ) %>%
   arrange(desc(avg_ator))
 
-
 ggplot() + 
   geom_point(
     data=b10, 
-    aes(x=avg_ator, y=avg_opp_ator, size=total_wins))+
+    aes(x=avg_ator, y=avg_opp_ator, size = total_wins))+
   geom_text_repel(
     data=b10, 
-    aes(x=avg_ator, y=avg_opp_ator, label=winner)
-  )
+    aes(x=avg_ator, y=avg_opp_ator, label=winner))+
+  labs(title="Big Ten at large proves ator leads to wins",
+       subtitle="Many Big Ten opponents also play efficient basketball",
+       caption="Source: Her Hoops Stats | Graph by Dylan Manfre",
+       x = "Average Team ator",
+       y = "Average Opponent ator")
 ```
 It's a close race but teams in the Pac-12 had the highest ator last season. The Big Ten had the second highest. There are many talented guards in the Pac-12 and this is something I can look further into later on. I'm curious if there would be any centers who had a particularly high ator or non-guards.
 
@@ -199,10 +197,22 @@ tenn <- ator_only %>%
   filter(home_team_name == "Tennessee" | away_team_name == "Tennessee") %>% 
   select(gamedate_east, home_team_name, away_team_name, winner, team_ator, opp_ator) %>% 
   arrange((gamedate_east))
-
 ```
 
-Its best ator was a game against UCF when it had an ator of a 4.0 which is huge. They had 24 assits that game. UCF only had 11 assists and 15 turnovers. That particular game displayed what Tennessee is able to do on defense and how it can capitalize off opponents mistakes. Its highest allowed ator was a mid-November against Indiana who finished with a 2.0 and a 12-point win. The line graph shows a majority of Tennessee's games have ended with an above average ator which means it is playing efficient basketball. It ended the year with 25 wins and a Sweet 16 appearance. 
+Its best ator was a game against UCF when it had an ator of a 4.0 which is huge. They had 24 assits that game. UCF only had 11 assists and 15 turnovers. That particular game displayed what Tennessee is able to do on defense and how it can capitalize off opponents mistakes. 
+
+Tennessee's highest allowed ator was a mid-November against Indiana who finished with a 2.0 and a 12-point win. The line graph shows a majority of Tennessee's games have ended with an above average ator which means it is playing efficient basketball. It ended the year with 25 wins and a Sweet 16 appearance. 
+
+Looking at how it's spread out over time, the Vols stayed pretty consistent averaging over 1 for most of the season November was a 1.0 but it went 4-8 that month. December was it's best month averaging a 1.7 ator.
+
+```{r}
+tenn_timing <- tenn %>% 
+  mutate(month = month(gamedate_east)) %>% 
+  group_by(month) %>%
+  summarize(avg_ator = mean(team_ator),
+            avg_opp_ator = mean(opp_ator)) %>% 
+  arrange(desc(avg_ator))
+```
 
 ```{r}
 ggplot() + geom_line(data=tenn, aes(x=gamedate_east, y=team_ator))+
@@ -213,8 +223,26 @@ ggplot() + geom_line(data=tenn, aes(x=gamedate_east, y=team_ator))+
        x = "Month",
        y = "Team ator")
 ```
+The SEC, as we can see with the graph below, has the worst ator out of the power 5 teams which I figured was interesting because Tennessee seems to be so good in that statistic. It has a 0.4 lead over Kentucky, the next closest team. The conference as a whole, has the second most wins out of all the power 5 conferences too which also interested me. It shows an opposing point of view to Frese's point that maybe ator's don't always lead to wins, other components do too.
 
+The Big 12 is right in the center with a respectable ator, but the fewest wins.
 
+```{r}
+p5_plot <- ggplot() + 
+  geom_point(
+    data=p5_conf, 
+    aes(x=total_wins, y=avg_ator))+
+  geom_text_repel(
+    data=p5_conf, 
+    aes(x=total_wins, y=avg_ator, label=winning_conference))+
+  labs(title="Does a good ATOR really lead to more wins?",
+       subtitle="The short answer is, it depends, Big 12 shows otherwise.",
+       caption="Source: Her Hoops Stats | Graph by Dylan Manfre",
+       x = "Wins",
+       y = "Average Team ator")
+```
+
+There's a few characters at play here that both prove Frese's point and also dispel it. Clearly, having a good assist to turnover ratio does lead to wins in most cases. Every coach has their one aspect that they like to harp on. ator is hers and for Maryland, it's worked. The veteran head caoch hopes it'll work again this year as the Terps hope to make it back to the Elite Eight with a fresh crop of players.
 
 
 
