@@ -138,7 +138,7 @@ b10_only <- ggplot() +
 ```
 Ask Iowa women's basketball head coach Lisa Bluder, and she'd agree with Brenda Frese. However, her Hawkeyes also have the highest opponent ator in the conference. But, the Hawkeyes also got 31 wins separating them from everyone else. 
 ```{r}
-
+#only power 5 ators
 p5_conf <- p5_teams_ator %>%
   group_by(winning_conference) %>% 
   summarize(
@@ -147,6 +147,7 @@ p5_conf <- p5_teams_ator %>%
     avg_opp_ator = mean(opp_ator)
   ) %>%
   arrange(desc(avg_ator))
+
 
 ggplot() + 
   geom_point(
@@ -167,7 +168,7 @@ summary(model1)
 But lets spread it out over the course of the season. Filtering on a team's home and away name will show its full schedule. Nine of Maryland's highest team_ator's resulted in wins. The only loss was to Iowa in early March on the road. Even then, Maryland still had an ator of a 2 which is pretty respectable in Frese's eyes.
 
 ```{r}
-ator_only %>% 
+umd <- ator_only %>% 
   filter(home_team_name == "Maryland" | away_team_name == "Maryland") %>% 
   select(gamedate_east, home_team_name, away_team_name, winner, team_ator, opp_ator) %>% 
   arrange(desc(team_ator))
@@ -197,14 +198,21 @@ Let's look into Tennessee.
 tenn <- ator_only %>% 
   filter(home_team_name == "Tennessee" | away_team_name == "Tennessee") %>% 
   select(gamedate_east, home_team_name, away_team_name, winner, team_ator, opp_ator) %>% 
-  arrange(desc(team_ator))
+  arrange((gamedate_east))
+
 ```
 
-Its best ator was a game agaisnt UCF when it had an ator of a 4.0 which is huge. They had 24 assits that game. UCF only had 11 assists and 15 turnovers. That particular game displayed what Tennessee is able to do on defense and how it can capitalize off opponents mistakes.
+Its best ator was a game against UCF when it had an ator of a 4.0 which is huge. They had 24 assits that game. UCF only had 11 assists and 15 turnovers. That particular game displayed what Tennessee is able to do on defense and how it can capitalize off opponents mistakes. Its highest allowed ator was a mid-November against Indiana who finished with a 2.0 and a 12-point win. The line graph shows a majority of Tennessee's games have ended with an above average ator which means it is playing efficient basketball. It ended the year with 25 wins and a Sweet 16 appearance. 
 
-Its highest allowed ator was a mid-November against Indiana who finsihed with a 2.0 and a 12-point win. Maybe I should create a differential column to show point differential and see if ator is predictive in any way of a larger or smaller point differential as opposed to pure wins. The question here is "Does having a high ator predict if a team will have a large point differential in wins.
-
-
+```{r}
+ggplot() + geom_line(data=tenn, aes(x=gamedate_east, y=team_ator))+
+            geom_hline(data=p5_conf, aes(yintercept=1.070761 ,color="red"))+
+  labs(title="Tennessee is taking care of the ball",
+       subtitle="Vols finished with an above average ator in a majority of its games.",
+       caption="Source: Her Hoops Stats | Graph by Dylan Manfre",
+       x = "Month",
+       y = "Team ator")
+```
 
 
 
