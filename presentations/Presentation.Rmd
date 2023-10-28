@@ -157,13 +157,13 @@ ggplot() +
     aes(x=avg_ator, y=avg_opp_ator, label=winner)
   )
 ```
+It's a close race but teams in the Pac-12 had the highest ator last season. The Big Ten had the second highest. There are many talented guards in the Pac-12 and this is something I can look further into later on. I'm curious if there would be any centers who had a particularly high ator or non-guards.
 
-Reading the model, we can see the low R-squared and residual standard of error means there is a relationship between the two factors. Doing a linear model was the best way to explain this relationship becasue it gets to what Frese claims: that having a good assist to turnover ratio leads to wins. Looking at the scatter plot, we ccan tell that Maryland is doing pretty good for itself in terms of proving Frese's theory that having a good ator leads to wins.
+Reading the model below, we can see the low R-squared and residual standard of error means there is a relationship between the two factors. Doing a linear model was the best way to explain this relationship becasue it gets to what Frese claims: that having a good assist to turnover ratio leads to wins. Looking at the scatter plot, we ccan tell that Maryland is doing pretty good for itself in terms of proving Frese's theory that having a good ator leads to wins.
 ```{r}
 model1 <- lm(total_wins ~ avg_ator, data = total_wins)
 summary(model1)
 ```
-
 But lets spread it out over the course of the season. Filtering on a team's home and away name will show its full schedule. Nine of Maryland's highest team_ator's resulted in wins. The only loss was to Iowa in early March on the road. Even then, Maryland still had an ator of a 2 which is pretty respectable in Frese's eyes.
 
 ```{r}
@@ -200,9 +200,9 @@ tenn <- ator_only %>%
   arrange(desc(team_ator))
 ```
 
+Its best ator was a game agaisnt UCF when it had an ator of a 4.0 which is huge. They had 24 assits that game. UCF only had 11 assists and 15 turnovers. That particular game displayed what Tennessee is able to do on defense and how it can capitalize off opponents mistakes.
 
-
-
+Its highest allowed ator was a mid-November against Indiana who finsihed with a 2.0 and a 12-point win. Maybe I should create a differential column to show point differential and see if ator is predictive in any way of a larger or smaller point differential as opposed to pure wins. The question here is "Does having a high ator predict if a team will have a large point differential in wins.
 
 
 
