@@ -268,13 +268,7 @@ p5_plot <- ggplot() +
        y = "Average Team ator")
 ```
 
-There's a few characters at play here that both prove Frese's point and also dispel it. Clearly, having a good assist to turnover ratio does lead to wins in most cases. Every coach has their one aspect that they like to harp on. ator is hers and for Maryland, it's worked. The veteran head caoch hopes it'll work again this year as the Terps hope to make it back to the Elite Eight with a fresh crop of players.
-
-
-
-
-
-
+There's a few characters at play here that both prove Frese's point and also dispel it. Clearly, having a good assist to turnover ratio does lead to wins in most cases. Every coach has their one aspect that they like to harp on. ator is hers and for Maryland, it's worked. The veteran head coach hopes it'll work again this year as the Terps hope to make it back to the Elite Eight with a fresh crop of players.
 
 
 
