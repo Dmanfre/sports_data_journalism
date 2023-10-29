@@ -228,7 +228,7 @@ ggplot() + geom_line(data=tenn, aes(x=gamedate_east, y=team_ator))+
 ```
 
 ```{r}
-#Tenn player scrapping
+#Tenn player scrapping. Copied from the 772 books.
 
 tenn_url <- "https://utsports.com/sports/womens-basketball/stats/2022-23"
 
