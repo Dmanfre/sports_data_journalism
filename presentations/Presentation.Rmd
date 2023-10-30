@@ -70,13 +70,9 @@ game_boxes_with_teams <- game_boxes_with_teams %>%
 winner_loser <- game_boxes_with_teams %>% 
   select(home_team_name, home_team_conference, pts, away_team_name, away_team_conference, opp_pts, winner, winning_conference, difference)
 ```
-The main question to answer: Do teams with higher assist to turn over ratios win more.
-Short answer: 
+Narrative starts below.
 
-
-Start the narrative here
-
-Lede: Fans who listened to Maryland women's basketball head coach Brenda Frese's interviews last season heard the veteran coach say the words assist to turnover ratio. A basketball metric which divides assists by turnovers and is indicative of a team's ball security. 
+Fans who listened to Maryland women's basketball head coach Brenda Frese's interviews last season heard the veteran coach say the words assist to turnover ratio. A basketball metric which divides assists by turnovers and is indicative of a team's ball security. 
 
 Maryland advanced to the Elite Eight last year on a 1.4 assist to turnover ratio which was eighth best among power 5 teams and fourth in the Big Ten confernece. To get that number, I needed to make sure I understood what each team's assist to turnover ratio looked like. In a large dataset such as this one, trimming unnecessary columns made the work a lot easier.
 
@@ -226,9 +222,30 @@ ggplot() + geom_line(data=tenn, aes(x=gamedate_east, y=team_ator))+
        y = "Team ator",
        color = "SEC Average ATOR")
 ```
-
+I noticed Tennessee won 12-of-13 games from Dec. 6 to Jan. 22. The codeblock below shows that Tennessee had a 1.7 ator in those 12. wins. Not quite a 2:1 but still pretty good all things considered because the avg_ator of everyone during that stretch of time was 0.94.
 ```{r}
-#Tenn player scrapping. Copied from the 772 books.
+#isolating the win streak
+tenn_streaking <- ator_only %>% 
+    filter((home_team_name == "Tennessee" | away_team_name == "Tennessee") &
+         (gamedate_east >= "2022-12-06" & gamedate_east <= "2023-01-22")) %>% 
+  select(gamedate_east, home_team_name, away_team_name, winner, team_ator, opp_ator) %>% 
+  arrange((gamedate_east))
+
+#getting average ator for the streak
+
+tenn_streaking %>% 
+  group_by(winner) %>%
+  summarize(avg_ator = mean(team_ator))
+
+# all teams ator during that stretch
+ator_only %>% 
+  filter(gamedate_east >= "2022-12-06" & gamedate_east <= "2023-01-22") %>%
+  summarize(avg_ator = mean(team_ator))
+
+```
+I scraped Tennessee's stats page. Table 22 gave me what I wanted with assists sand turnovers and ator so I kept that one. The table surprises me. Seven players have over a 1.0 which is respectable but two players have over a 2.0 which is ideal. I asked some coaches I know what they'd consider a good ator and they said a 2:1 is ideal. Those two players on Tennessee are Jasmine Powell and Edie Darby. I feel you have to eliminate Darby because she only played in 10 games whereas Powell played in 37. Darby also only had 2 assists and 1 turnover in those games.
+```{r}
+#Tenn player scrapping. Copied from the 772 book.
 
 tenn_url <- "https://utsports.com/sports/womens-basketball/stats/2022-23"
 
@@ -246,8 +263,6 @@ results <- results[[22]]
 tenn_playrs <- results %>% 
   clean_names()
 ```
-
-I scraped Tennessee's stats page. Table 22 gave me what I wanted with assists sand turnovers and ator so I kept that one. The table surprises me. Seven players have over a 1.0 which is respectable but two players have over a 2.0 which is ideal. I asked some coaches I know what they'd consider a good ator and they said a 2:1 is ideal. Those two players on Tennessee are Jasmine Powell and Edie Darby. I feel you have to eliminate Darby because she only played in 10 games whereas Powell played in 37. Darby also only had 2 assists and 1 turnover in those games.
 
 The SEC, as we can see with the graph below, has the worst ator out of the power 5 teams which I figured was interesting because Tennessee seems to be so good in that statistic. It has a 0.4 lead over Kentucky, the next closest team. The conference as a whole, has the second most wins out of all the power 5 conferences too which also interested me. It shows an opposing point of view to Frese's point that maybe ator's don't always lead to wins, other components do too.
 
@@ -269,15 +284,5 @@ p5_plot <- ggplot() +
 ```
 
 There's a few characters at play here that both prove Frese's point and also dispel it. Clearly, having a good assist to turnover ratio does lead to wins in most cases. Every coach has their one aspect that they like to harp on. ator is hers and for Maryland, it's worked. The veteran head coach hopes it'll work again this year as the Terps hope to make it back to the Elite Eight with a fresh crop of players.
-
-
-
-
-
-
-
-
-
-
 
 
