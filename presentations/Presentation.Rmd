@@ -79,6 +79,45 @@ ator_only <- game_boxes_with_teams %>%
 
 ```
 
+```{r}
+
+# Get a unique list of team names
+teams <- unique(ator_only$winner)
+```
+
+```{r}
+
+# Aiden and I worked on this for loop together. He is a wizard and extreamly helpful with lists. We walked through things step by step and he was helpful with encouraging me to write the code and use different chat GPT prompts.
+
+
+
+season_ator_list <- c()
+
+for(team in teams){
+  team_away <- ator_only %>% 
+  filter(away_team_name == team)
+
+team_away_ast <- sum(team_away$opp_ast)
+team_away_turn <- sum(team_away$opp_tov)
+  
+team_home <- ator_only %>% 
+  filter(home_team_name == team)
+
+team_home_ast <- sum(team_home$ast)
+team_home_turn <- sum(team_home$tov)
+
+team_ator <-  (team_away_ast + team_home_ast)/(team_away_turn + team_home_turn)
+
+season_ator_list <- c(season_ator_list, team_ator)}
+
+```
+
+```{r}
+
+season_ator <- data.frame(team = teams, season_ator = season_ator_list)
+
+```
+
 Now I have something to work with. ator_only, gives me the team, opponent, game result and both teams' ators as well as other stats I believer are important to the analysis. But we need a little more before we dive deep. We need to find out a team's total wins, their ators and opponents.
 
 ```{r}
@@ -86,13 +125,14 @@ Now I have something to work with. ator_only, gives me the team, opponent, game 
 total_wins <- game_boxes_with_teams %>%
   group_by(winner, winning_conference) %>%
   summarize(
-    total_wins = n(),
-    avg_winning_ator = mean(winning_ator),
-    avg_losing_ator = mean(losing_ator)
-  ) %>%
-  arrange(desc(total_wins))
+    total_wins = n()) %>%
+  arrange(desc(total_wins)) %>% 
+  rename(team = winner)
 
-#This shows me the number of wins a team has, its avg ator in wins and a team's avg ator in losses. 
+# joining the season_ator to total_wins
+wins_ator <- total_wins %>%
+  inner_join(season_ator, by = "team")
+
 ```
 Earlier in the season, a majority of teams had lower ators in November and December. It seems like teams did better in February and March, on average, which makes sense because they want to play better heading into the tournament make a good case for a high seed in the tournament. 
 
@@ -106,19 +146,22 @@ time_element <- ator_only %>%
 ```
 
 We can make an early model to see if there is a possible relationship between a good ator and wins now that we have all the necessary components. A scatter plot is the best way to demonstrate this. We can contextualize this a bit more now that things are set up. Let's look at Maryland and see how its compared against the Big Ten and it's fellow power 5 schools. Knowing how Power 5 teams performed seems ideal for comparing Maryland because it's a majority of its competition.
+
 ```{r}
-p5_teams_ator <- ator_only %>% 
+p5_teams_ator <- wins_ator %>% 
   filter(winning_conference %in% power_5)
 
-b10 <- total_wins %>% 
-filter(winner %in% big_ten)
+b10 <- wins_ator %>% 
+filter(team %in% big_ten)
 ```
 
 The plot shows an upward slope which means there's at least some relationship between wins and a positive ator. So maybe Frese is on to something. 
 ```{r}
 b10_only <- ggplot() +
-  geom_point(data = b10, aes(x = total_wins, y = avg_winning_ator)) +
-  geom_smooth(data=total_wins, aes(x=total_wins, y=avg_winning_ator), method="lm") +
+  geom_point(data = b10, aes(x = total_wins, y = season_ator)) +
+  geom_smooth(data=wins_ator, aes(x=total_wins, y=season_ator), method="lm") +
+   geom_text_repel(
+    data=b10, aes(x=total_wins, y=season_ator, label=team))+
   labs(title = "Big Ten Wins agaisnt Average Assist to Turnover Ratio",
        subtitle = "Maryland is on the right side of the assist to turnover ratio.", 
        caption = "Source: Her Hoops Stats | Graphic by Dylan Manfre",
@@ -129,35 +172,19 @@ b10_only <- ggplot() +
 Ask Iowa women's basketball head coach Lisa Bluder, and she'd agree with Brenda Frese. However, her Hawkeyes also have the highest opponent ator in the conference. But, the Hawkeyes also got 31 wins separating them from everyone else. 
 ```{r}
 #only power 5 ators
-p5_conf <- p5_teams_ator %>%
+p5_conf <- ator_only %>%
+  filter(winning_conference %in% power_5) %>% 
   group_by(winning_conference) %>% 
-  summarize(
-    count = n(),
-    avg_winning_ator = mean(winning_ator),
-    avg_losing_ator = mean(losing_ator)
-  ) %>% 
-  arrange(desc(avg_winning_ator))
+  summarize(count = n(), 
+            avg_winning_ator = mean(winning_ator))
 
-ggplot() + 
-  geom_point(
-    data=b10, 
-    aes(x=avg_winning_ator, y=avg_losing_ator, size = total_wins))+
-  geom_text_repel(
-    data=b10, 
-    aes(x=avg_winning_ator, y=avg_losing_ator, label=winner))+
-  labs(title="Big Ten shows ator leads to wins",
-       subtitle="Many Big Ten opponents also play efficient basketball",
-       caption="Source: Her Hoops Stats | Graph by Dylan Manfre",
-       x = "Average Team ator",
-       y = "Average Opponent ator",
-       size = "Total Wins")
 ```
 It's a close race but teams in the Big Ten had the highest ator last season. The Pac-12 had the second highest but not by much. There are many talented guards in the Big 12 and this is something I can look further into later on. I'm curious if there would be any centers who had a particularly high ator or non-guards.
 
 Reading the model below, we can see the low R-squared and residual standard of error means there is a relationship between the two factors. Doing a linear model was the best way to explain this relationship becasue it gets to what Frese claims: that having a good assist to turnover ratio leads to wins. Looking at the scatter plot, we ccan tell that Maryland is doing pretty good for itself in terms of proving Frese's theory that having a good ator leads to wins.
 ```{r}
 
-model1 <- lm(total_wins ~ avg_winning_ator, data = total_wins)
+model1 <- lm(total_wins ~ season_ator, data = wins_ator)
 summary(model1)
 ```
 But lets spread it out over the course of the season. Filtering on a team's home and away name will show its full schedule. Nine of Maryland's highest team_ator's resulted in wins. The only loss was to Iowa in early March on the road. Even then, Maryland still had an ator of a 2 which is pretty respectable in Frese's eyes.
@@ -171,19 +198,19 @@ umd <- ator_only %>%
 In this scatter plot, I thought the SEC was interesting comparison, because like the Big Ten, its teams are spread around, but Tennessee stood out to me because of its placement. SEC teams seem to have a higher win count but lower ator.
 
 ```{r}
-sec <- total_wins %>% 
-filter(winner %in% sec_teams)
+sec <- wins_ator %>% 
+filter(team %in% sec_teams)
 
 b10vSEC <- ggplot() +
-  geom_point(data = b10, aes(x = total_wins, y = avg_winning_ator), color = "red") +
-  geom_point(data = sec, aes(x = total_wins, y = avg_winning_ator), color = "blue") +
-  geom_smooth(data=total_wins, aes(x=total_wins, y=avg_winning_ator), method="lm") +
+  geom_point(data = b10, aes(x = total_wins, y = season_ator), color = "red") +
+  geom_point(data = sec, aes(x = total_wins, y = season_ator), color = "blue") +
+  geom_smooth(data=wins_ator, aes(x=total_wins, y=season_ator), method="lm") +
   labs(title = "Teams with strong guard depth have higher Assist to Turnover Ratios",
        subtitle = "Big Ten teams listed in red, SEC listed in blue.",
        x = "Total Wins",
        y = "Assist to Turnover Ratio in wins") +
-  geom_text_repel(data = b10, aes(x = total_wins, y = avg_winning_ator, label = winner))+
-  geom_text_repel(data = sec, aes(x = total_wins, y = avg_winning_ator, label = winner))
+  geom_text_repel(data = b10, aes(x = total_wins, y = season_ator, label = team))+
+  geom_text_repel(data = sec, aes(x = total_wins, y = season_ator, label = team))
 
 ```
 
@@ -197,15 +224,7 @@ Its best ator was a game against UCF when it had an ator of a 4.0 which is huge.
 
 Tennessee's highest allowed ator was a mid-November against Indiana who finished with a 2.0 and a 12-point win. The line graph shows a majority of Tennessee's games have ended with an above average ator which means it is playing efficient basketball. It ended the year with 25 wins and a Sweet 16 appearance. 
 
-Looking at how it's spread out over time, the Vols stayed pretty consistent averaging over 1 for most of the season November was a 1.21 but it went 4-8 that month. December was it's best month averaging a 1.9 ator.
-
-```{r}
-tenn_timing <- tenn %>% 
-  filter(winner == "Tennessee") %>% 
-  mutate(month = month(gamedate_east)) %>% 
-  group_by(month) %>% 
-  summarize(avg_winning_ator = mean(winning_ator))
-```
+Looking at how it's spread out over time, the Vols stayed pretty consistent 1 for most of the season November was a 1.21 but it went 4-8 that month. December was it's best month averaging a 1.9 ator.
 
 ```{r}
 ggplot() + geom_line(data=tenn, aes(x=gamedate_east, y=winning_ator))+
@@ -215,7 +234,7 @@ ggplot() + geom_line(data=tenn, aes(x=gamedate_east, y=winning_ator))+
        caption="Source: Her Hoops Stats | Graph by Dylan Manfre",
        x = "Month",
        y = "Winning ator",
-       color = "SEC Average ATOR")
+       color = "SEC Average ATOR in wins")
 ```
 I noticed Tennessee won 12-of-13 games from Dec. 6 to Jan. 22. The codeblock below shows that Tennessee had a 1.7 ator in those 12. wins. Not quite a 2:1 but still pretty good all things considered because the avg_ator of all winners during that stretch of time was 1.07.
 ```{r}
@@ -277,64 +296,4 @@ There's a few characters at play here that both prove Frese's point and also dis
 
 
 
-
-
-
-
-
-
-
-```{r}
-tn_away <- ator_only %>% 
-  filter(away_team_name == "Tennessee")
-
-tn_away_ast <- sum(tn_away$opp_ast)
-tn_away_turn <- sum(tn_away$opp_tov)
-  
-```
-
-```{r}
-
-tn_home <- ator_only %>% 
-  filter(home_team_name == "Tennessee")
-
-tn_home_ast <- sum(tn_home$ast)
-tn_home_turn <- sum(tn_home$tov)
-
-tenn_ator = (tn_away_ast + tn_home_ast)/(tn_away_turn + tn_home_turn)
-
-```
-
-
-```{r}
-
-# Get a unique list of team names
-teams <- unique(ator_only$winner)
-```
-
-```{r}
-
-season_ator_list <- list()
-
-for(team in teams){
-  team_away <- ator_only %>% 
-  filter(away_team_name == team)
-
-team_away_ast <- sum(team_away$opp_ast)
-team_away_turn <- sum(team_away$opp_tov)
-  
-team_home <- ator_only %>% 
-  filter(home_team_name == team)
-
-team_home_ast <- sum(team_home$ast)
-team_home_turn <- sum(team_home$tov)
-
-team_ator = (team_away_ast + team_home_ast)/(team_away_turn + team_home_turn)
-
-season_ator_list <- c(season_ator_list, team_ator)
-
-}
-
-
-```
 
