@@ -4,7 +4,6 @@ title: Does having a good assist to turnover ratio really lead to wins?
 
 ---
 
-
 ```{r}
 #libraries
 library(tidyverse)
@@ -182,7 +181,7 @@ b10vSEC <- ggplot() +
   labs(title = "Teams with strong guard depth have higher Assist to Turnover Ratios",
        subtitle = "Big Ten teams listed in red, SEC listed in blue.",
        x = "Total Wins",
-       y = "Team Assist to Turnover Ratio") +
+       y = "Assist to Turnover Ratio in wins") +
   geom_text_repel(data = b10, aes(x = total_wins, y = avg_winning_ator, label = winner))+
   geom_text_repel(data = sec, aes(x = total_wins, y = avg_winning_ator, label = winner))
 
@@ -276,4 +275,66 @@ p5_plot <- ggplot() +
 There's a few characters at play here that both prove Frese's point and also dispel it. Clearly, having a good assist to turnover ratio does lead to wins in most cases. Every coach has their one aspect that they like to harp on. ator is hers and for Maryland, it's worked. The veteran head coach hopes it'll work again this year as the Terps hope to make it back to the Elite Eight with a fresh crop of players.
 
 
+
+
+
+
+
+
+
+
+
+```{r}
+tn_away <- ator_only %>% 
+  filter(away_team_name == "Tennessee")
+
+tn_away_ast <- sum(tn_away$opp_ast)
+tn_away_turn <- sum(tn_away$opp_tov)
+  
+```
+
+```{r}
+
+tn_home <- ator_only %>% 
+  filter(home_team_name == "Tennessee")
+
+tn_home_ast <- sum(tn_home$ast)
+tn_home_turn <- sum(tn_home$tov)
+
+tenn_ator = (tn_away_ast + tn_home_ast)/(tn_away_turn + tn_home_turn)
+
+```
+
+
+```{r}
+
+# Get a unique list of team names
+teams <- unique(ator_only$winner)
+```
+
+```{r}
+
+season_ator_list <- list()
+
+for(team in teams){
+  team_away <- ator_only %>% 
+  filter(away_team_name == team)
+
+team_away_ast <- sum(team_away$opp_ast)
+team_away_turn <- sum(team_away$opp_tov)
+  
+team_home <- ator_only %>% 
+  filter(home_team_name == team)
+
+team_home_ast <- sum(team_home$ast)
+team_home_turn <- sum(team_home$tov)
+
+team_ator = (team_away_ast + team_home_ast)/(team_away_turn + team_home_turn)
+
+season_ator_list <- c(season_ator_list, team_ator)
+
+}
+
+
+```
 
