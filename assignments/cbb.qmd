@@ -3,6 +3,7 @@
 
 library(tidyverse)
 library(Hmisc)
+library(lubridate)
 ```
 
 ```{r}
@@ -319,5 +320,73 @@ ggplot() +
   geom_line(data=average, aes(x=Date, y=mean_shooting), color="black") + 
   scale_y_continuous(limits = c(0, .70))
 ```
+
+## Early season assignment Nov. 9 2023 ##
+
+```{r}
+
+cbblogs <- read_csv("https://raw.githubusercontent.com/dwillis/dwillis.github.io/main/docs/sports-data-files/cbblogs1524.csv")
+
+```
+
+```{r}
+# isolating Maryland
+umd_games <-  cbblogs %>% 
+filter(TeamFull == "Maryland Terrapins")
+
+#umd true shooting and filtering for November
+nov_tspct <- umd_games %>% 
+  mutate(tspct=TeamScore/(2*(TeamFGA+0.44*TeamFTA))) %>% 
+  mutate(opp_tspct=OpponentScore/(2*(OpponentFGA+0.44*OpponentFTA))) %>% 
+  mutate(month = month(Date)) %>% 
+  filter(month == "11")
+
+nov_tspct %>% 
+  group_by(Season) %>% 
+  summarize(avg_tsp = mean(tspct),
+            opp_tsp = mean(opp_tspct))
+  
+first_game <- nov_tspct %>% 
+  filter(Game == "1"| Season == "2023-2024")
+
+```
+
+graphing
+```{r}
+
+ggplot() + 
+  geom_point(data=nov_tspct, aes(x=tspct, y=Game))+
+  geom_text_repel(data=first_game, aes(x=tspct, y=Game, label=Season), color="red")
+
+```
+I decided to look at how Maryland's true shooting percentage changed over the course of each game in November. The first game of each season is highlighted and labeled by the season. It's clear that 2022-2023 Maryland say it's best true shooting percentage and 23-24 is lower on the list.
+
+
+
+
+
+
+## Practice R vest ##
+
+```{r}
+library(rvest)
+```
+
+```{r}
+
+url <- "http://www.cfbstats.com/2023/leader/national/team/offense/split01/category09/sort01.html"
+
+scoringoffense <- url |>
+  read_html() |>
+  html_table()
+
+scoring_df <- scoringoffense[[1]]
+
+```
+
+
+
+
+
 
 

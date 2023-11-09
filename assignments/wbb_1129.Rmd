@@ -223,6 +223,7 @@ nations <- fibaurl %>%
   html_nodes(xpath = '//*[@id="fiba_ranking_table_wrapper"]/table') %>%
   html_table()
 nations_df <- nations[[1]]
+
 wbb_rosters23 <- mutate(wbb_rosters23, country = case_when(!is.na(pm.state) ~ "USA"))
 
 

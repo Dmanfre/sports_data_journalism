@@ -89,8 +89,6 @@ teams <- unique(ator_only$winner)
 
 # Aiden and I worked on this for loop together. He is a wizard and extreamly helpful with lists. We walked through things step by step and he was helpful with encouraging me to write the code and use different chat GPT prompts.
 
-
-
 season_ator_list <- c()
 
 for(team in teams){
@@ -124,7 +122,7 @@ Now I have something to work with. ator_only, gives me the team, opponent, game 
 #Total_wins
 total_wins <- game_boxes_with_teams %>%
   group_by(winner, winning_conference) %>%
-  summarize(
+  summarise(
     total_wins = n()) %>%
   arrange(desc(total_wins)) %>% 
   rename(team = winner)
@@ -140,7 +138,7 @@ Earlier in the season, a majority of teams had lower ators in November and Decem
 time_element <- ator_only %>% 
   mutate(month = month(gamedate_east)) %>% 
   group_by(month) %>%
-  summarize(avg_ator = mean(winning_ator),
+  summarise(avg_ator = mean(winning_ator),
             avg_opp_ator = mean(losing_ator)) %>% 
   arrange(desc(avg_ator))
 ```
@@ -175,7 +173,7 @@ Ask Iowa women's basketball head coach Lisa Bluder, and she'd agree with Brenda 
 p5_conf <- ator_only %>%
   filter(winning_conference %in% power_5) %>% 
   group_by(winning_conference) %>% 
-  summarize(count = n(), 
+  summarise(count = n(), 
             avg_winning_ator = mean(winning_ator))
 
 ```
@@ -191,8 +189,17 @@ But lets spread it out over the course of the season. Filtering on a team's home
 
 ```{r}
 umd <- ator_only %>% 
-  filter(home_team_name == "Maryland" | away_team_name == "Maryland") %>% 
-  select(gamedate_east, home_team_name, pts, away_team_name, opp_pts, team_ator, opp_ator, winner, winning_ator, losing_ator)
+  filter(home_team_name == "Maryland" | away_team_name == "Maryland") 
+
+
+umd <- umd %>% 
+  mutate(umd_ator = ifelse(umd$winner == "Maryland", umd$winning_ator, umd$losing_ator)) %>% 
+  select(gamedate_east, home_team_name, pts, away_team_name, opp_pts, team_ator, opp_ator, winner, winning_ator, losing_ator, umd_ator)
+
+
+ggplot() + geom_line(data=umd, aes(x=gamedate_east, y=umd_ator))
+
+
 ```
 
 In this scatter plot, I thought the SEC was interesting comparison, because like the Big Ten, its teams are spread around, but Tennessee stood out to me because of its placement. SEC teams seem to have a higher win count but lower ator.
@@ -217,7 +224,8 @@ b10vSEC <- ggplot() +
 Let's look into Tennessee.
 ```{r}
 tenn <- ator_only %>% 
-  filter(home_team_name == "Tennessee" | away_team_name == "Tennessee")
+  filter(home_team_name == "Tennessee" | away_team_name == "Tennessee") %>% 
+   mutate(tenn_ator = ifelse(tenn$winner == "Tennessee", tenn$winning_ator, tenn$losing_ator))
 ```
 
 Its best ator was a game against UCF when it had an ator of a 4.0 which is huge. They had 24 assists that game. UCF only had 11 assists and 15 turnovers. That particular game displayed what Tennessee is able to do on defense and how it can capitalize off opponents mistakes. 
@@ -227,7 +235,7 @@ Tennessee's highest allowed ator was a mid-November against Indiana who finished
 Looking at how it's spread out over time, the Vols stayed pretty consistent 1 for most of the season November was a 1.21 but it went 4-8 that month. December was it's best month averaging a 1.9 ator.
 
 ```{r}
-ggplot() + geom_line(data=tenn, aes(x=gamedate_east, y=winning_ator))+
+ggplot() + geom_line(data=tenn, aes(x=gamedate_east, y=tenn_ator))+
             geom_hline(data=p5_conf, aes(yintercept=1.167473 ,color="red"))+
   labs(title="Tennessee is taking care of the ball",
        subtitle="Vols finished with an above average ator in a majority of its games.",
@@ -248,7 +256,7 @@ tenn_streaking <- ator_only %>%
 # all teams ator during that stretch
 ator_only %>% 
   filter(gamedate_east >= "2022-12-06" & gamedate_east <= "2023-01-22") %>%
-  summarize(avg_ator = mean(winning_ator))
+  summarise(avg_ator = mean(winning_ator))
 
 ```
 I scraped Tennessee's stats page. Table 22 gave me what I wanted with assists sand turnovers and ator so I kept that one. The table surprises me. Seven players have over a 1.0 which is respectable but two players have over a 2.0 which is ideal. I asked some coaches I know what they'd consider a good ator and they said a 2:1 is ideal. Those two players on Tennessee are Jasmine Powell and Edie Darby. I feel you have to eliminate Darby because she only played in 10 games whereas Powell played in 37. Darby also only had 2 assists and 1 turnover in those games.
@@ -286,14 +294,24 @@ p5_plot <- ggplot() +
     aes(x=count, y=avg_winning_ator, label=winning_conference))+
   labs(title="Does a good ATOR really lead to more wins?",
        subtitle="The Big 12 shows the short answer is, it depends.",
-       caption="Source: Her Hoops Stats | Graph by Dylan Manfre",
+       caption="Source: Her Hoop Stats | Graph by Dylan Manfre",
        x = "Wins",
        y = "Average Team ator")
 ```
 
+
 There's a few characters at play here that both prove Frese's point and also dispel it. Clearly, having a good assist to turnover ratio does lead to wins in most cases. Every coach has their one aspect that they like to harp on. ator is hers and for Maryland, it's worked. The veteran head coach hopes it'll work again this year as the Terps hope to make it back to the Elite Eight with a fresh crop of players.
 
+```{r}
 
+ lsu <- ator_only %>% 
+  filter(home_team_name == "lsu" | away_team_name == "lsu") %>% 
+   mutate(lsu_ator = ifelse(winner == "lsu", winning_ator, losing_ator)) %>% 
+  select(gamedate_east, winner, loser, winning_ator, losing_ator, lsu_ator)
+
+
+
+```
 
 
 
