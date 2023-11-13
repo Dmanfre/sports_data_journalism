@@ -1,0 +1,34 @@
+---
+title: "Final Project: Do teams with internatinal players perform better than those who don't"
+author: "Dylan Manfre"
+date: '2023-11-07'
+format: 
+  html:
+    code-fold: true
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(lubridate)
+```
+
+```{r}
+# Loading data for the seaosns
+logs18_24 <- read_csv("https://www.thescoop.org/sports-data-files/wbblogs1824.csv")
+
+# Loading player data from 2022-2023
+wbb22_23_rosters <- read_csv("data/wbb_rosters_2022_23.csv")
+
+```
+
+--------- Data cleaning ---------
+# Notes: This cleaning is based on code from Derek's wbb_1129.Rmd doc.
+
+```{r}
+
+
+
+
+```
+

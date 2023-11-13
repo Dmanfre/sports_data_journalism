@@ -264,10 +264,6 @@ I scraped Tennessee's stats page. Table 22 gave me what I wanted with assists sa
 #Tenn player scrapping. Copied from the 772 book.
 
 tenn_url <- "https://utsports.com/sports/womens-basketball/stats/2022-23"
-
-# read in the html
-results <- tenn_url |>
-  read_html()
  
 # read in the html and extract all the tables
 results <- tenn_url |>
@@ -299,7 +295,6 @@ p5_plot <- ggplot() +
        y = "Average Team ator")
 ```
 
-
 There's a few characters at play here that both prove Frese's point and also dispel it. Clearly, having a good assist to turnover ratio does lead to wins in most cases. Every coach has their one aspect that they like to harp on. ator is hers and for Maryland, it's worked. The veteran head coach hopes it'll work again this year as the Terps hope to make it back to the Elite Eight with a fresh crop of players.
 
 ```{r}
@@ -308,7 +303,6 @@ There's a few characters at play here that both prove Frese's point and also dis
   filter(home_team_name == "lsu" | away_team_name == "lsu") %>% 
    mutate(lsu_ator = ifelse(winner == "lsu", winning_ator, losing_ator)) %>% 
   select(gamedate_east, winner, loser, winning_ator, losing_ator, lsu_ator)
-
 
 
 ```
