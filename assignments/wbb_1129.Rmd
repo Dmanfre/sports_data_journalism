@@ -262,6 +262,7 @@ wbb_rosters23 <- subset(wbb_rosters23, select = -c(Worldrank,Zonerank,IOC,`Curre
 
 wbb_rosters23 %>% filter(is.na(country))
 ```
+
 ```{r}
 wbb_rosters23 %>% group_by(hometown,homestate, country) %>% summarise(count=n()) %>% arrange(desc(count))
 wbb_rosters23 <- subset(wbb_rosters23, select = -c(temp) )

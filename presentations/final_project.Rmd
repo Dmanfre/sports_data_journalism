@@ -11,6 +11,11 @@ format:
 library(tidyverse)
 library(janitor)
 library(lubridate)
+#install.packages("remotes")
+#remotes::install_github("slu-openGIS/postmastr")
+library(postmastr)
+library(usdata)
+library(rvest)
 ```
 
 ```{r}
@@ -27,8 +32,182 @@ wbb22_23_rosters <- read_csv("data/wbb_rosters_2022_23.csv")
 
 ```{r}
 
+# Hometown/Homestate Cleaning
 
+wbb22_23_rosters <- wbb22_23_rosters %>% 
+  mutate(hometown_cleaned = str_to_upper(str_replace(hometown, "\\.",""))) %>% 
+  mutate(hometown_cleaned = str_replace(hometown_cleaned,"\\.","")) %>%
+  mutate(hometown_cleaned = str_replace(hometown_cleaned,"/.*","")) %>%
+  mutate(hometown_cleaned = str_replace(hometown_cleaned,"\\.$","")) %>%
+  mutate(hometown_cleaned = str_replace(hometown_cleaned,",",", ")) %>%
+  mutate(hometown_cleaned = str_replace(hometown_cleaned,"-"," ")) %>% 
+  mutate(hometown_cleaned = str_squish(hometown_cleaned))
+
+states_non_standard <- pm_append(type = "state", input = c("SD.", "MASS", "CALIF", "MICH", "NEB", "IND", "MINN", "ORE", "OHIO", "FLA", "MISS", "TENN", "ARIZ", "KAN", "ALA", "OKLA", "WIS", "ILL", " WASH", "ARK", "COLO", "NEV", "CONN", "WISC", "WVA", "DEL", "WYO", "CALI", "LOUIS", "VIRG", "MONT", "PENN", "TEX", "KANS", "NEBR", "IDA", "COL"), output = c("SD", "MA", "CA", "MI", "NE", "IN", "MN", "OR", "OH", "FL", "MS", "TN", "AZ", "KS", "AL", "OK", "WI", "IL", "WA", "AR", "CO", "NV", "CT", "WI", "WV", "DE", "WY", "CA", "LA", "VA", "MT", "PA", "TX", "KS", "NE", "ID", "CO"), locale = "us")
+
+dict <- pm_dictionary(type='state', case = c("title", "upper", "lower"), append = states_non_standard)
+
+wbb22_23_rosters <- wbb22_23_rosters %>% pm_identify(var="hometown_cleaned")
+
+parsed <- wbb22_23_rosters %>% 
+  pm_identify(var="hometown_cleaned") %>% 
+  pm_prep(var="hometown_cleaned", type="street") %>% 
+  pm_state_parse(dict)
+
+wbb22_23_rosters <- left_join(wbb22_23_rosters, parsed, by="pm.uid")
+
+wbb22_23_rosters %>%
+  filter(is.na(hometown_cleaned))
+
+wbb22_23_rosters <- wbb22_23_rosters %>% separate(hometown, c('hometown', 'homestate'), sep=',', extra='merge')
+
+wbb22_23_rosters <- wbb22_23_rosters %>% mutate(homestate=str_trim(homestate), homestate=str_replace(homestate, '\\.', '')) %>%
+  mutate(homestate = case_when(is.na(abbr2state(homestate)) ~ homestate, TRUE ~ (abbr2state(homestate))))
+```
+
+# Foregin Nation Cleaning based on the wbb_1129.Rmd file
+```{r}
+
+fibaurl <- "https://www.fiba.basketball/rankingwomen"
+nations <- fibaurl %>%
+  read_html() %>%
+  html_nodes(xpath = '//*[@id="fiba_ranking_table_wrapper"]/table') %>%
+  html_table()
+nations_df <- nations[[1]]
+
+wbb22_23_rosters <- mutate(wbb22_23_rosters, country = case_when(!is.na(pm.state) ~ "USA"))
+
+
+wbb22_23_rosters <- wbb22_23_rosters %>% mutate(temp = sapply(strsplit(wbb22_23_rosters$hometown_cleaned, ", ", fixed=TRUE), tail, 1))
+
+wbb22_23_rosters <- mutate(wbb22_23_rosters, country = case_when(
+  temp %in% c('BC', 'QUEBEC', 'BRITISH COLUMBIA', 'ALBERTA', 'ONTARIO', 'NOVA SCOTIA', 'ONT') ~ "CANADA", 
+  temp == "THE NETHERLANDS" ~ "NETHERLANDS", 
+  temp == "SOUTH AUSTRALIA" ~ "AUSTRALIA",  
+  temp == "WESTERN AUSTRALIA" ~ "AUSTRALIA",
+  temp == "BOSNIA" ~ "BOSNIA AND HERZEGOVINA",
+  temp == "MACEDONIA" ~ "MACEDONIA",
+  temp == "TAIWAN" ~ "TAIWAN",
+  temp == "PAPUA NEW GUINEA" ~ "PAPUA NEW GUINEA",
+  TRUE ~ country))
+
+nations_df$Country <- toupper(nations_df$Country)
+
+
+
+added_nations <- data.frame(Worldrank=c(0, 0, 0, 0),
+                  Country=c('ENGLAND', 'RUSSIA', 'SCOTLAND', 'NORTHERN IRELAND'),
+                  Zonerank=c(0, 0, 0, 0),
+                  IOC=c('', '', '', ''),
+                  "Current points"=c(0, 0, 0, 0),
+                  "+/- Rank *"=c(0, 0, 0, 0),
+                  check.names = FALSE)
+nations_df <- rbind(nations_df, added_nations)
+
+
+wbb22_23_rosters <- left_join(wbb22_23_rosters, nations_df, by=c('temp'='Country'))
+
+wbb22_23_rosters <- mutate(wbb22_23_rosters, country = case_when((!is.na(Worldrank) & is.na(country)) ~ temp, is.na(Worldrank) &  !is.na(country) ~ country, country == "USA" ~ "USA"))
+
+wbb22_23_rosters <- subset(wbb22_23_rosters, select = -c(Worldrank,Zonerank,IOC,`Current points`, `+/- Rank *`) )
+
+wbb22_23_rosters %>% filter(is.na(country))
+```
+
+```{r}
+wbb22_23_rosters %>% 
+  group_by(hometown,homestate, country) %>% 
+  summarise(count=n()) %>% arrange(desc(count))
+
+wbb22_23_rosters <- subset(wbb22_23_rosters, select = -c(temp) )
+
+```
+
+
+-------- Exploratory data section ----------
+
+What do I want to accomplish: I want to see what teams have the most international players and how those teams have performed over recent years to answer the core question: Do teams with international players that contribute do better than ones who do not. 
+
+Steps I need to take:
+- Filter for every non-usa player. 
+- Do a group_by() and summarize() to see which team has the most international players in the 2022-23 season. 
+- See if any of them have transfered prior to the 2022-23 season and see where.
+- Do an analysis of the teams with non-usa players in logs18_24 generating their season stats.
+
+What I still need to do:
+- Need to get player stats so I can see player stats who have actually contributed to their teams. 
+- How do I get the individual player stats for the players who are internationals?
+- Do I just do a team analysis based on the teams that have internationals?
+
+
+filter for non-us players and counting by team
+```{r}
+# filtering for non-us players
+non_us_players <- wbb22_23_rosters %>% 
+  filter(country_clean != "USA", division == "I")
+
+# counting teams with international players
+teams_with_int_players <- non_us_players %>% 
+  group_by(team, conference) %>% 
+  summarize(int_playrs = n()) %>% 
+  arrange(desc(int_playrs))
+
+# where do international players come from
+## Spain, Austrailia and Canada are the top three which makes sense. Spanish national team is very good.
+countries <- non_us_players %>% 
+    group_by(country_clean) %>% 
+  summarize(int_playrs = n()) %>% 
+  arrange(desc(int_playrs))
 
 
 ```
+
+
+Here I will create a bolian mid-major column to see how many teams here are mid-majors vs. p5 and then count them.
+```{r}
+power_5 <- c("ACC", "Big 12", "Big Ten", "Pac-12", "SEC")
+
+# Assuming your data frame is named 'your_data' and the column is 'conference'
+
+teams_with_int_players <- teams_with_int_players %>%
+  mutate(mid_major_p5 = ifelse(conference %in% power_5, "power_5", "mid_major"))
+
+# 316 more mid-majors than power_5 schools have international players. 
+teams_with_int_players %>% 
+  group_by(mid_major_p5) %>% 
+  summarize(count = n())
+
+```
+
+I want to create a list of teams and their total players. Then I want to join that to `teams_with_international_players`. Then I want to create a percentage of international players on each team. I want to do this becasue in a story or analysis, percentages are easier to comprehend.
+
+```{r}
+# total_players df
+total_players <-  wbb22_23_rosters %>% 
+  group_by(team, conference) %>% 
+  summarize(total_players = n()) %>% 
+  arrange((team))
+
+#joining
+
+all_players <- inner_join(teams_with_int_players, total_players, by="team")
+
+all_players <- all_players %>% select(-conference.y) %>% rename(conference = conference.x)
+
+# perc_int
+
+all_players <- all_players %>% 
+  mutate(int_perc = (int_playrs/total_players)*100) %>% 
+  arrange(desc(int_perc))
+
+```
+
+
+
+
+
+
+
+
+
 
