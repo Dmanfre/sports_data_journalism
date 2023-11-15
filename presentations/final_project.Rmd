@@ -28,7 +28,7 @@ wbb22_23_rosters <- read_csv("data/wbb_rosters_2022_23.csv")
 
 ```
 
--------- Exploratory data section ----------
+-------- Exploratory data section for 2023-2024 ----------
 
 What do I want to accomplish: I want to see what teams have the most international players and how those teams have performed over recent years to answer the core question: Do teams with international players that contribute do better than ones who do not. 
 
@@ -62,8 +62,6 @@ countries <- non_us_players %>%
     group_by(country_clean) %>% 
   summarize(int_players = n()) %>% 
   arrange(desc(int_players))
-
-
 ```
 
 
@@ -93,12 +91,51 @@ by_conf <- teams_with_int_players %>%
   mutate(conf_int_perc = int_players/sum(int_players)*100) %>% 
   arrange(desc(int_players))
 
-# Iona has 21% of the MAAC's international players.
-teams_with_int_players %>% 
-  filter(conference == "MAAC") %>%
-  summarise(total_int_players = sum(int_players)) %>% 
-  mutate(team_perc_of_conf = total_int_players/sum(total_int_players)*100)
+# South Florida has 40% of the AAC's international players and the most in D1 with 12.
 
+teams_with_int_players %>% 
+  filter(conference == "Pac-12") %>%
+  summarise(total_int_players = sum(int_players)) %>% 
+  mutate(team_perc_of_conf = total_int_players/sum(total_int_players)*100) %>% 
+  arrange(desc(total_int_players))
+```
+
+
+STORY SENTENCE: `28% of Division I teams have at least one international player on its roster in 2023-24 season.`
+
+# The overwhelming majority have one player. This is obvious and not really newsworthy.
+```{r}
+# How many teams have each number of players? Example sentence: 4 teams have 9 players.
+
+number_of_teams_perc <- teams_with_int_players %>% 
+  group_by(int_players) %>% 
+  summarise(num_teams = n()) %>%
+  mutate(number_of_teams_perc = num_teams/sum(num_teams)*100) %>% 
+  arrange(desc(num_teams))
+```
+
+Do something like this to form categories of players: "Less than five" "more than five" 
+```{r}
+all_players_categories <- all_players %>%
+  mutate(
+    int_players_categories = case_when(
+        int_players < 5 ~ "Less than 5",
+        int_players >= 5 & int_players <= 10 ~ "Between 5 and 10 players",
+        int_players > 10 ~ "Greater than 10 players",
+      )
+  )
+head(all_players_categories)
+
+all_players_categories %>% 
+  group_by(int_players_categories) %>% 
+  summarize(number_of_teams = n())
+```
+
+STORY SENTENCE: `18.3% of teams have at least 5 international players on their roster this season.`
+```{r}
+at_least_5 <- number_of_teams_perc %>% 
+  filter(int_players >=5) %>% 
+  summarise(at_least_5 = 52/sum(num_teams)*100)
 ```
 
 
@@ -128,10 +165,6 @@ all_players <- all_players %>%
 # What was the average amount of international players on a roster in 2022-23?```
 
 # I want to get an average amount of players, then filter out any teams that are below that average. The ones with more players are more likely the ones who will contribute more to their program.
-
-
-
-  
 
 ```
 
