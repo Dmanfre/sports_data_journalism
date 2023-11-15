@@ -24,12 +24,9 @@ logs18_24 <- read_csv("https://www.thescoop.org/sports-data-files/wbblogs1824.cs
 
 # Loading player data from 2022-2023
 wbb23_24_rosters <- read_csv("data/wbb_rosters_2023_24.csv")
+wbb22_23_rosters <- read_csv("data/wbb_rosters_2022_23.csv")
 
 ```
-
---------- Data cleaning ---------
-
-
 
 -------- Exploratory data section ----------
 
@@ -56,15 +53,15 @@ non_us_players <- wbb23_24_rosters %>%
 # counting teams with international players
 teams_with_int_players <- non_us_players %>% 
   group_by(team, conference) %>% 
-  summarize(int_playrs = n()) %>% 
-  arrange(desc(int_playrs))
+  summarize(int_players = n()) %>% 
+  arrange(desc(int_players))
 
 # where do international players come from
 ## Spain, Austrailia and Canada are the top three which makes sense. Spanish national team is very good.
 countries <- non_us_players %>% 
     group_by(country_clean) %>% 
-  summarize(int_playrs = n()) %>% 
-  arrange(desc(int_playrs))
+  summarize(int_players = n()) %>% 
+  arrange(desc(int_players))
 
 
 ```
@@ -73,8 +70,6 @@ countries <- non_us_players %>%
 Here I will create a bolian mid-major column to see how many teams here are mid-majors vs. p5 and then count them.
 ```{r}
 power_5 <- c("ACC", "Big 12", "Big Ten", "Pac-12", "SEC")
-
-# Assuming your data frame is named 'your_data' and the column is 'conference'
 
 teams_with_int_players <- teams_with_int_players %>%
   mutate(mid_major_p5 = ifelse(conference %in% power_5, "power_5", "mid_major"))
@@ -86,7 +81,30 @@ teams_with_int_players %>%
 
 ```
 
-I want to create a list of teams and their total players. Then I want to join that to `teams_with_international_players`. Then I want to create a percentage of international players on each team. I want to do this becasue in a story or analysis, percentages are easier to comprehend.
+# Possible question: What percentage of the conference total are on each team. I want to wrtie a sentence that hypothetically says: "Team X has 30% of the Big Ten's international players."
+
+# From there, I can dive into how those players impact said teams.
+
+```{r}
+# Big Ten has 22 players
+by_conf <- teams_with_int_players %>% 
+  group_by(conference) %>% 
+  summarise(int_players = sum(int_players)) %>% 
+  mutate(conf_int_perc = int_players/sum(int_players)*100) %>% 
+  arrange(desc(int_players))
+
+# Iona has 21% of the MAAC's international players.
+teams_with_int_players %>% 
+  filter(conference == "MAAC") %>%
+  summarise(total_int_players = sum(int_players)) %>% 
+  mutate(team_perc_of_conf = total_int_players/sum(total_int_players)*100)
+
+```
+
+
+
+
+I want to create a list of teams and their total players. Then I want to join that to `teams_with_international_players`. Then I want to create a percentage of international players on each team. I want to do this because in a story or analysis, percentages are easier to comprehend.
 
 ```{r}
 # total_players df
@@ -104,12 +122,18 @@ all_players <- all_players %>% select(-conference.y) %>% rename(conference = con
 # perc_int
 
 all_players <- all_players %>% 
-  mutate(int_perc = (int_playrs/total_players)*100) %>% 
+  mutate(int_perc = (int_players/total_players)*100) %>% 
   arrange(desc(int_perc))
 
+# What was the average amount of international players on a roster in 2022-23?```
+
+# I want to get an average amount of players, then filter out any teams that are below that average. The ones with more players are more likely the ones who will contribute more to their program.
+
+
+
+  
+
 ```
-
-
 
 
 
