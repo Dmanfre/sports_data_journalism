@@ -94,8 +94,7 @@ by_conf <- teams_with_int_players %>%
 
 # South Florida has 40% of the AAC's international players and the most in D1 with 12.
 
-teams_with_int_players %>% 
-  filter(conference == "Pac-12") %>%
+teams_with_int_players %>%
   summarise(total_int_players = sum(int_players)) %>% 
   mutate(team_perc_of_conf = total_int_players/sum(total_int_players)*100) %>% 
   arrange(desc(total_int_players))
@@ -196,8 +195,104 @@ The issues I've run into are about thinking beyond the obvious questions. I know
 
 
 
+----------- Making comparisons to 2022-23 season ------------
+```{r}
+# Non_us_22_23 
+non_us_22_23 <- wbb22_23_rosters %>% 
+  filter(country_clean != "USA", division == "I")
+
+head(non_us_22_23)
+```
+
+```{r}
+# total roster size 22-23
+roster_size_22_23 <- wbb22_23_rosters %>% 
+  group_by(team, conference) %>% 
+  summarize(total_players = n()) %>% 
+  arrange((team))
+
+# non-us-players and then joining with roster size
+int_players_22_23 <- non_us_22_23 %>% 
+  group_by(team, conference) %>% 
+  summarize(int_players = n()) %>% 
+  arrange(desc(int_players))
+
+# joining
+all_players_22_23 <- inner_join(int_players_22_23, roster_size_22_23, by="team")
+head(all_players_22_23)
+
+all_players_22_23 <- all_players_22_23 %>% select(-conference.y) %>% rename(conference = conference.x)
+
+# perc_int
+
+all_players_22_23 <- all_players_22_23 %>% 
+  mutate(int_perc = (int_players/total_players)*100) %>% 
+  arrange(desc(int_players))
+
+# categories 
+team_categories_22_23 <- all_players_22_23 %>%
+  mutate(
+    int_players_categories = case_when(
+        int_players < 5 ~ "Less than 5",
+        int_players >= 5 & int_players <= 10 ~ "Between 5 and 10 players",
+        int_players > 10 ~ "Greater than 10 players",))
+
+# by_conf_22_23
+
+by_conf_22_23 <- int_players_22_23 %>% 
+  group_by(conference) %>% 
+  summarise(int_players = sum(int_players)) %>% 
+  mutate(conf_int_perc = int_players/sum(int_players)*100) %>% 
+  arrange(desc(int_players))
+
+```
+
+```{r}
+# 22-23 number of teams with int_players_perc
+int_players_22_23 %>% 
+  group_by(int_players) %>% 
+  summarise(num_teams = n()) %>%
+  mutate(number_of_teams_perc = num_teams/sum(num_teams)*100) %>% 
+  arrange(desc(num_teams))
+```
+
+------ SECTION ON JOINS AND DIFFERENCES -------
+
+My goal here will be to join certain dfs together. I will be joining the ones that are most important to my analysis. Then, I will rename columns to label them as a 2022-23 season or 23-24 season. Then I will calculate the difference or percent change if necessary.
+
+If a team or conference, significantly increases the number of international players, that can be newsworthy and helpful in the analysis.
+
+analysis: The Big Ten, Big 12 and Sun Belt each lost six players while the ASUN gained 10 international players form 22-23 to the 23-24 season.
+```{r}
+# by conference
+total_by_conf <- inner_join(by_conf, by_conf_22_23, by = "conference")
+total_by_conf <- total_by_conf %>% 
+  rename(int_players_23_24 = int_players.x,
+          int_players_22_23 = int_players.y,
+           perc_2023_24 = conf_int_perc.x,
+          perc_2022_23 = conf_int_perc.y) %>%
+  mutate(int_diff = int_players_23_24 - int_players_22_23)
+```
 
 
+```{r}
+# by team category
+categories_23_24 <- all_players_categories %>% 
+  group_by(int_players_categories) %>% 
+  summarize(number_of_teams = n())
+
+categories_22_23 <- team_categories_22_23 %>% 
+  group_by(int_players_categories) %>% 
+  summarize(number_of_teams = n())
+
+total_categories <- total_by_conf <- inner_join(categories_23_24, categories_22_23, by = "int_players_categories")
+total_categories <- total_categories %>%
+  rename(teams_23_24 = number_of_teams.x,
+         teams_22_23 = number_of_teams.y) %>% 
+  mutate(diff = teams_23_24 - teams_22_23)
+
+head(total_categories)
+```
 
 
 
