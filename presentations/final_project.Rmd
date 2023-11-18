@@ -114,23 +114,6 @@ number_of_teams_perc <- teams_with_int_players %>%
   arrange(desc(num_teams))
 ```
 
-Do something like this to form categories of players: "Less than five" "more than five" 
-```{r}
-all_players_categories <- all_players %>%
-  mutate(
-    int_players_categories = case_when(
-        int_players < 5 ~ "Less than 5",
-        int_players >= 5 & int_players <= 10 ~ "Between 5 and 10 players",
-        int_players > 10 ~ "Greater than 10 players",
-      )
-  )
-head(all_players_categories)
-
-all_players_categories %>% 
-  group_by(int_players_categories) %>% 
-  summarize(number_of_teams = n())
-```
-
 STORY SENTENCE: `18.3% of teams have at least 5 international players on their roster this season.`
 ```{r}
 at_least_5 <- number_of_teams_perc %>% 
@@ -169,8 +152,31 @@ all_players <- all_players %>%
 ```
 
 
+Do something like this to form categories of players: "Less than five" "more than five" 
 
+```{r}
 
+all_players_categories <- all_players %>%
+  mutate(
+    int_players_categories = case_when(
+        int_players < 5 ~ "Less than 5",
+        int_players >= 5 & int_players <= 10 ~ "Between 5 and 10 players",
+        int_players > 10 ~ "Greater than 10 players",
+      )
+  )
+head(all_players_categories)
+
+all_players_categories %>% 
+  group_by(int_players_categories) %>% 
+  summarize(number_of_teams = n())
+```
+
+```{r}
+non_us_players %>% 
+  filter(team == "Manhattan") %>% 
+  group_by(country_clean) %>%
+  summarise(count = n())
+```
 
 
 
