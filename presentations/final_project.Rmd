@@ -28,6 +28,7 @@ wbb22_23_rosters <- read_csv("data/wbb_rosters_2022_23.csv")
 
 ```
 
+
 -------- Exploratory data section for 2023-2024 ----------
 
 What do I want to accomplish: I want to see what teams have the most international players and how those teams have performed over recent years to answer the core question: Do teams with international players that contribute do better than ones who do not. 
@@ -171,12 +172,37 @@ all_players_categories %>%
   summarize(number_of_teams = n())
 ```
 
+Question: How many teams have each number of players? 74 teams have 14 players, 72 teams have 15 players. There are 22 teams who have 12 players and the same number of teams have 16 players.
+```{r}
+all_players %>% 
+  group_by(total_players) %>% 
+  summarize(count = n())
+```
+Where do players on certain teams come from?
 ```{r}
 non_us_players %>% 
-  filter(team == "Manhattan") %>% 
+  filter(team == "South Florida") %>% 
   group_by(country_clean) %>%
-  summarise(count = n())
+  summarise(count = n()) %>% 
+  arrange(desc(count))
 ```
+
+--------- Second Presentation Progress Update Nov. 18, 2023 -------
+The central question I want to answer is do teams with higher amounts of international players preform better than those with fewer international players. What I've done so far is create dfs to answer the obvious questions of "Which teams, conferences, countries, have the most international players in Division I basketball?" I also generated percentages of non-us players on each team and I want to make that a focal point of my analysis too. The teams with majority international players are ones I'd like to focus on more in-depth. These could be the teams with five or more international players, which, according to the code I wrote, is 52 teams. I chose to break it up by 15 and 10 because most teams have between 12 to 15 total players on their roster.
+
+My next task will be to create comparisons to the previous year's data 2022-2023 to see if the number of international players grew or not? If so, by how much. Essentially, I'm running all the above codes to answer those same questions but with last season's data. I'll need to be intentional and careful in my joins so that I know what is what. Then, my task will be to tackle how to measure the performances of the teams. Another question would be do I also do a player analysis? Say I get player stats from the `wehoops` database. How would I mark certain players as internationals. I have not yet looked at this so I don't know if it gives player bio information along with stats.
+
+The issues I've run into are about thinking beyond the obvious questions. I know the ways I can expand this, but figuring out which would best serve my analysis and get me closer to the central answer of my question is where one issue lies. This is something we could talk through to see if I'm missing any of the obvious questions I need to answer that could point me in the right direction of what type of expansion would best serve me.
+
+
+
+
+
+
+
+
+
+
 
 
 
