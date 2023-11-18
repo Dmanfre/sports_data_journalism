@@ -262,6 +262,8 @@ My goal here will be to join certain dfs together. I will be joining the ones th
 
 If a team or conference, significantly increases the number of international players, that can be newsworthy and helpful in the analysis.
 
+`These dfs will be key to my visualizations when I am at that stage of the project.`
+
 analysis: The Big Ten, Big 12 and Sun Belt each lost six players while the ASUN gained 10 international players form 22-23 to the 23-24 season.
 ```{r}
 # by conference
@@ -274,7 +276,6 @@ total_by_conf <- total_by_conf %>%
   mutate(int_diff = int_players_23_24 - int_players_22_23)
 ```
 
-
 ```{r}
 # by team category
 categories_23_24 <- all_players_categories %>% 
@@ -284,7 +285,10 @@ categories_23_24 <- all_players_categories %>%
 categories_22_23 <- team_categories_22_23 %>% 
   group_by(int_players_categories) %>% 
   summarize(number_of_teams = n())
+```
 
+Analysis: There were 13 more teams in 2023-24 with 5-10 international players than in 22-23. 
+```{r}
 total_categories <- total_by_conf <- inner_join(categories_23_24, categories_22_23, by = "int_players_categories")
 total_categories <- total_categories %>%
   rename(teams_23_24 = number_of_teams.x,
