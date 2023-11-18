@@ -298,8 +298,25 @@ total_categories <- total_categories %>%
 head(total_categories)
 ```
 
+Analysis: `Austraulia had the third most players in 23-24 but its down 23 players from a seaosn ago. Spain on the other hand, gained 24 new players.`
+```{r}
+# Countries and joining
+countries_22_23 <- non_us_22_23 %>% 
+    group_by(country_clean) %>% 
+  summarize(int_players = n()) %>% 
+  arrange(desc(int_players))
+
+# joining
+total_country <- inner_join(countries, countries_22_23, by = "country_clean")
+
+total_country <- total_country %>% 
+  rename(int_players_23_24 = int_players.x,
+         int_players_22_23 = int_players.y) %>% 
+  mutate(diff = int_players_23_24 - int_players_22_23, 
+  perc_change = ((int_players_23_24 - int_players_22_23) / int_players_22_23) * 100)
 
 
+```
 
 
 
