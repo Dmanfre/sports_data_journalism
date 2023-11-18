@@ -298,7 +298,7 @@ total_categories <- total_categories %>%
 head(total_categories)
 ```
 
-Analysis: `Austraulia had the third most players in 23-24 but its down 23 players from a seaosn ago. Spain on the other hand, gained 24 new players.`
+Analysis: `Austraulia had the third most players in 23-24 but its down 23 players from a seaosn ago, which is 18%. Spain on the other hand, gained 24 new players.`
 ```{r}
 # Countries and joining
 countries_22_23 <- non_us_22_23 %>% 
@@ -314,10 +314,19 @@ total_country <- total_country %>%
          int_players_22_23 = int_players.y) %>% 
   mutate(diff = int_players_23_24 - int_players_22_23, 
   perc_change = ((int_players_23_24 - int_players_22_23) / int_players_22_23) * 100)
-
-
 ```
 
+```{r}
+# Teams and joining
+
+teams_total <- inner_join(teams_with_int_players, int_players_22_23, by = "team")
+
+teams_total <- teams_total %>% 
+  select(-conference.y) %>% 
+  rename(int_players_23_24 = int_players.x,
+         int_players_22_23 = int_players.y) %>% 
+  mutate(diff = int_players_23_24 - int_players_22_23)
+```
 
 
 
