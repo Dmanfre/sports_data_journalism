@@ -93,18 +93,19 @@ by_conf <- teams_with_int_players %>%
   arrange(desc(int_players))
 
 # South Florida has 40% of the AAC's international players and the most in D1 with 12.
-
+# Filtering for the confernece allowes you to see a team's percentage of the conferences international players.
 teams_with_int_players %>%
+  filter(conference == "AAC") %>% 
   summarise(total_int_players = sum(int_players)) %>% 
   mutate(team_perc_of_conf = total_int_players/sum(total_int_players)*100) %>% 
   arrange(desc(total_int_players))
 ```
 
 
-STORY SENTENCE: `28% of Division I teams have at least one international player on its roster in 2023-24 season.`
+STORY SENTENCE: `28% of Division I teams have one international player on its roster in 2023-24 season.`
 
-# The overwhelming majority have one player. This is obvious and not really newsworthy.
 ```{r}
+# The overwhelming majority have one player. This is obvious and not really newsworthy.
 # How many teams have each number of players? Example sentence: 4 teams have 9 players.
 
 number_of_teams_perc <- teams_with_int_players %>% 
@@ -117,10 +118,9 @@ number_of_teams_perc <- teams_with_int_players %>%
 STORY SENTENCE: `18.3% of teams have at least 5 international players on their roster this season.`
 ```{r}
 at_least_5 <- number_of_teams_perc %>% 
-  filter(int_players >=5) %>% 
+  #filter(int_players >=5) %>% 
   summarise(at_least_5 = 52/sum(num_teams)*100)
 ```
-
 
 
 
@@ -145,12 +145,11 @@ all_players <- all_players %>%
   mutate(int_perc = (int_players/total_players)*100) %>% 
   arrange(desc(int_perc))
 
-# What was the average amount of international players on a roster in 2022-23?```
-
-# I want to get an average amount of players, then filter out any teams that are below that average. The ones with more players are more likely the ones who will contribute more to their program.
 
 ```
 
+# What was the average amount of international players on a roster in 2022-23?
+# I want to get an average amount of players, then filter out any teams that are below that average. The ones with more players are more likely the ones who will contribute more to their program.
 
 Do something like this to form categories of players: "Less than five" "more than five" 
 
@@ -172,12 +171,15 @@ all_players_categories %>%
 ```
 
 Question: How many teams have each number of players? 74 teams have 14 players, 72 teams have 15 players. There are 22 teams who have 12 players and the same number of teams have 16 players.
+
 ```{r}
 all_players %>% 
   group_by(total_players) %>% 
   summarize(count = n())
 ```
+
 Where do players on certain teams come from?
+
 ```{r}
 non_us_players %>% 
   filter(team == "South Florida") %>% 
@@ -290,15 +292,21 @@ categories_22_23 <- team_categories_22_23 %>%
 Analysis: There were 13 more teams in 2023-24 with 5-10 international players than in 22-23. 
 ```{r}
 total_categories <- total_by_conf <- inner_join(categories_23_24, categories_22_23, by = "int_players_categories")
+
 total_categories <- total_categories %>%
   rename(teams_23_24 = number_of_teams.x,
          teams_22_23 = number_of_teams.y) %>% 
-  mutate(diff = teams_23_24 - teams_22_23)
+  mutate(diff = teams_23_24 - teams_22_23,
+        grand_total = teams_23_24 + teams_22_23,
+        perc_23_24 = teams_23_24/sum(teams_23_24)*100,
+        perc_22_23 = teams_22_23/sum(teams_22_23)*100,
+        perc_change = (perc_23_24-perc_22_23)/(perc_22_23)*100)
 
 head(total_categories)
 ```
 
 Analysis: `Austraulia had the third most players in 23-24 but its down 23 players from a seaosn ago, which is 18%. Spain on the other hand, gained 24 new players.`
+
 ```{r}
 # Countries and joining
 countries_22_23 <- non_us_22_23 %>% 

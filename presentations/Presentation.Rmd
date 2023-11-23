@@ -266,13 +266,13 @@ I scraped Tennessee's stats page. Table 22 gave me what I wanted with assists sa
 tenn_url <- "https://utsports.com/sports/womens-basketball/stats/2022-23"
  
 # read in the html and extract all the tables
-results <- tenn_url |>
+tenn_results <- tenn_url |>
   read_html() |>
   html_table()
 
-results <- results[[22]]
+tenn_results <- tenn_results[[22]]
 
-tenn_playrs <- results %>% 
+tenn_playrs <- tenn_results %>% 
   clean_names()
 ```
 
