@@ -28,6 +28,21 @@ wbb22_23_rosters <- read_csv("data/wbb_rosters_2022_23.csv")
 
 ```
 
+The countries that need to be cleaned are "The Netherlands and BOSNIA AND HERZEGOVINA"
+
+```{r}
+
+wbb22_23_rosters <- wbb22_23_rosters %>% 
+  mutate(
+    country_clean = case_when(
+      country_clean == "THE NETHERLANDS" ~ "NETHERLANDS",
+      country_clean == "BOSNIA AND HERZEGOVINA" ~ "BOSNIA & HERZEGOVINA",
+      TRUE ~ as.character(country_clean)))
+
+```
+
+
+NOTE: I replaced the 23_24 file with the one Derek updated: this is a link to the file. https://github.com/Sports-Roster-Data/womens-college-basketball/blob/main/wbb_rosters_2023_24.csv
 
 -------- Exploratory data section for 2023-2024 ----------
 
@@ -44,7 +59,6 @@ What I still need to do:
 - How do I get the individual player stats for the players who are internationals?
 - Do I just do a team analysis based on the teams that have internationals?
 
-
 filter for non-us players and counting by team
 ```{r}
 # filtering for non-us players
@@ -58,13 +72,12 @@ teams_with_int_players <- non_us_players %>%
   arrange(desc(int_players))
 
 # where do international players come from
-## Spain, Austrailia and Canada are the top three which makes sense. Spanish national team is very good.
-countries <- non_us_players %>% 
+## Spain, Austraulia and Canada are the top three which makes sense. Spanish national team is very good.
+countries_23_24 <- non_us_players %>% 
     group_by(country_clean) %>% 
   summarize(int_players = n()) %>% 
   arrange(desc(int_players))
 ```
-
 
 Here I will create a bolian mid-major column to see how many teams here are mid-majors vs. p5 and then count them.
 ```{r}
@@ -123,7 +136,6 @@ at_least_5 <- number_of_teams_perc %>%
 ```
 
 
-
 I want to create a list of teams and their total players. Then I want to join that to `teams_with_international_players`. Then I want to create a percentage of international players on each team. I want to do this because in a story or analysis, percentages are easier to comprehend.
 
 ```{r}
@@ -179,7 +191,7 @@ all_players %>%
 ```
 
 Where do players on certain teams come from?
-
+Change the name of the team in the filter to see any team you want.
 ```{r}
 non_us_players %>% 
   filter(team == "South Florida") %>% 
@@ -189,6 +201,7 @@ non_us_players %>%
 ```
 
 --------- Second Presentation Progress Update Nov. 18, 2023 -------
+
 The central question I want to answer is do teams with higher amounts of international players preform better than those with fewer international players. What I've done so far is create dfs to answer the obvious questions of "Which teams, conferences, countries, have the most international players in Division I basketball?" I also generated percentages of non-us players on each team and I want to make that a focal point of my analysis too. The teams with majority international players are ones I'd like to focus on more in-depth. These could be the teams with five or more international players, which, according to the code I wrote, is 52 teams. I chose to break it up by 15 and 10 because most teams have between 12 to 15 total players on their roster.
 
 My next task will be to create comparisons to the previous year's data 2022-2023 to see if the number of international players grew or not? If so, by how much. Essentially, I'm running all the above codes to answer those same questions but with last season's data. I'll need to be intentional and careful in my joins so that I know what is what. Then, my task will be to tackle how to measure the performances of the teams. Another question would be do I also do a player analysis? Say I get player stats from the `wehoops` database. How would I mark certain players as internationals. I have not yet looked at this so I don't know if it gives player bio information along with stats.
@@ -290,6 +303,7 @@ categories_22_23 <- team_categories_22_23 %>%
 ```
 
 Analysis: There were 13 more teams in 2023-24 with 5-10 international players than in 22-23. 
+
 ```{r}
 total_categories <- total_by_conf <- inner_join(categories_23_24, categories_22_23, by = "int_players_categories")
 
