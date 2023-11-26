@@ -66,7 +66,7 @@ non_us_players <- wbb23_24_rosters %>%
   filter(country_clean != "USA", division == "I")
 
 # counting teams with international players
-teams_with_int_players <- non_us_players %>% 
+teams_with_int_players_23_24 <- non_us_players %>% 
   group_by(team, conference) %>% 
   summarize(int_players = n()) %>% 
   arrange(desc(int_players))
@@ -83,11 +83,11 @@ Here I will create a bolian mid-major column to see how many teams here are mid-
 ```{r}
 power_5 <- c("ACC", "Big 12", "Big Ten", "Pac-12", "SEC")
 
-teams_with_int_players <- teams_with_int_players %>%
+teams_with_int_players_23_24 <- teams_with_int_players_23_24 %>%
   mutate(mid_major_p5 = ifelse(conference %in% power_5, "power_5", "mid_major"))
 
 # 316 more mid-majors than power_5 schools have international players. 
-teams_with_int_players %>% 
+teams_with_int_players_23_24 %>% 
   group_by(mid_major_p5) %>% 
   summarize(count = n())
 
@@ -99,7 +99,7 @@ teams_with_int_players %>%
 
 ```{r}
 # Big Ten has 22 players
-by_conf <- teams_with_int_players %>% 
+by_conf <- teams_with_int_players_23_24 %>% 
   group_by(conference) %>% 
   summarise(int_players = sum(int_players)) %>% 
   mutate(conf_int_perc = int_players/sum(int_players)*100) %>% 
@@ -107,7 +107,7 @@ by_conf <- teams_with_int_players %>%
 
 # South Florida has 40% of the AAC's international players and the most in D1 with 12.
 # Filtering for the confernece allowes you to see a team's percentage of the conferences international players.
-teams_with_int_players %>%
+teams_with_int_players_23_24 %>%
   filter(conference == "AAC") %>% 
   summarise(total_int_players = sum(int_players)) %>% 
   mutate(team_perc_of_conf = total_int_players/sum(total_int_players)*100) %>% 
@@ -121,7 +121,7 @@ STORY SENTENCE: `28% of Division I teams have one international player on its ro
 # The overwhelming majority have one player. This is obvious and not really newsworthy.
 # How many teams have each number of players? Example sentence: 4 teams have 9 players.
 
-number_of_teams_perc <- teams_with_int_players %>% 
+number_of_teams_perc <- teams_with_int_players_23_24 %>% 
   group_by(int_players) %>% 
   summarise(num_teams = n()) %>%
   mutate(number_of_teams_perc = num_teams/sum(num_teams)*100) %>% 
@@ -136,7 +136,7 @@ at_least_5 <- number_of_teams_perc %>%
 ```
 
 
-I want to create a list of teams and their total players. Then I want to join that to `teams_with_international_players`. Then I want to create a percentage of international players on each team. I want to do this because in a story or analysis, percentages are easier to comprehend.
+I want to create a list of teams and their total players. Then I want to join that to `teams_with_international_players_23_24`. Then I want to create a percentage of international players on each team. I want to do this because in a story or analysis, percentages are easier to comprehend.
 
 ```{r}
 # total_players df
@@ -147,7 +147,7 @@ total_players <-  wbb23_24_rosters %>%
 
 #joining
 
-all_players <- inner_join(teams_with_int_players, total_players, by="team")
+all_players <- inner_join(teams_with_int_players_23_24, total_players, by="team")
 
 all_players <- all_players %>% select(-conference.y) %>% rename(conference = conference.x)
 
@@ -329,7 +329,7 @@ countries_22_23 <- non_us_22_23 %>%
   arrange(desc(int_players))
 
 # joining
-total_country <- inner_join(countries, countries_22_23, by = "country_clean")
+total_country <- inner_join(countries_23_24, countries_22_23, by = "country_clean")
 
 total_country <- total_country %>% 
   rename(int_players_23_24 = int_players.x,
@@ -341,14 +341,65 @@ total_country <- total_country %>%
 ```{r}
 # Teams and joining
 
-teams_total <- inner_join(teams_with_int_players, int_players_22_23, by = "team")
+teams_total <- inner_join(teams_with_int_players_23_24, int_players_22_23, by = "team")
 
 teams_total <- teams_total %>% 
   select(-conference.y) %>% 
   rename(int_players_23_24 = int_players.x,
-         int_players_22_23 = int_players.y) %>% 
-  mutate(diff = int_players_23_24 - int_players_22_23)
+         int_players_22_23 = int_players.y,
+         conference = conference.x) %>% 
+   mutate(diff = int_players_23_24 - int_players_22_23, 
+  perc_change = ((int_players_23_24 - int_players_22_23) / int_players_22_23) * 100)
 ```
+
+
+_______ Progress after Second Update ---------
+
+I updated the countries in 22-23 to match 23-24. There were only two that needed to be changed. This can be the section were I see if the teams with more international players do better than those who don't.
+
+# I need the updated logs to include more games from this season
+
+South Florida has the most international players in 23-24 so let's do a dive into them over the last season to now.
+```{r}
+
+sf_22_24 <- logs18_24 %>% 
+  filter(TeamFull == "South Florida Bulls", Season >= "2022-2023") 
+
+```
+z scores
+```{r}
+#averages
+team_avgs <- logs18_24 |> 
+  filter(Season >= "2022-2023") %>% 
+  group_by(Conference, Team) |> 
+  summarise(
+    FGAvg = mean(TeamFGPCT), 
+    ReboundAvg = mean(TeamTotalRebounds), 
+    OppFGAvg = mean(OpponentFGPCT),
+    OffRebAvg = mean(OpponentTotalRebounds)
+    ) 
+
+#Z scores
+teamzscore <- team_avgs |> 
+  mutate(
+    FGzscore = as.numeric(scale(FGAvg, center = TRUE, scale = TRUE)),
+    RebZscore = as.numeric(scale(ReboundAvg, center = TRUE, scale = TRUE)),
+    OppZscore = as.numeric(scale(OppFGAvg, center = TRUE, scale = TRUE)) * -1,
+    OppRebZScore = as.numeric(scale(OffRebAvg, center = TRUE, scale = TRUE)) * -1,
+    TotalZscore = FGzscore + RebZscore + OppZscore + OppRebZScore
+  ) %>% 
+  rename(team = Team)
+
+#adding the number of international players
+
+teamzscore <- inner_join(teamzscore, teams_total, by = "team") 
+
+# I think this is removing some teams? I only have 219 rows when team avg shows 377 teams.
+
+```
+
+
+
 
 
 
