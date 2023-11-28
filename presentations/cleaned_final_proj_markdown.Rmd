@@ -81,6 +81,9 @@ total_player_22_23 <- wbb22_23_rosters %>%
   group_by(team, conference) %>% 
   summarize(total_players = n()) %>% 
   arrange((team))
+
+# this shows the missing team from 23-24 is Florida State
+list <- anti_join (total_player_22_23, total_player_23_24, by= "team")
 ```
 
 
@@ -90,20 +93,27 @@ total_player_22_23 <- wbb22_23_rosters %>%
 
 ```{r}
  
-all_players23_24 <- anti_join(teams_with_int_players_23_24, total_player_23_24, by = "team")
+all_players23_24 <- left_join(total_player_23_24, teams_with_int_players_23_24, by = "team", "conference")
 
-all_players22_23 <- anti_join(teams_with_int_players_22_23, total_player_22_23, by = "team")
+all_players22_23 <- left_join(total_player_22_23, teams_with_int_players_22_23, by = "team", "confernece")
 
 all_players <- inner_join(all_players23_24, all_players22_23, by = "team")
 
 ```
 
+```{r}
+
+all_players <- all_players %>% 
+  rename(conference = conference.x.x,
+         total_23_24 = total_players.x,
+         int_players_23_24 = int_players.x,
+         total_22_23 = total_players.y,
+         int_players_22_23 = int_players.y) %>% 
+select(team, conference, int_players_23_24, int_players_22_23, total_23_24, total_22_23)
+```
+
 
 # Everything below this was done before I discovered the discrepency. So everything above is what is needed to form the all_players dataframe. 
-
-
-
-
 
 adding in percentages
 ```{r}
