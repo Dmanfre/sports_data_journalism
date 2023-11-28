@@ -19,8 +19,7 @@ logs18_24 <- read_csv("https://www.thescoop.org/sports-data-files/wbblogs1824.cs
 logs18_24 <- logs18_24 %>% 
   filter(Season != "2023-2024")
 
-logs <- logs18_24 %>% 
-  bind_rows(logs18_24, logs24)
+logs <- bind_rows(logs18_24, logs24)
 
 # Loading player data from 2022-2023
 wbb23_24_rosters <- read_csv("data/wbb_rosters_2023_24.csv")
@@ -252,8 +251,8 @@ z scores
 ```{r}
 #averages
 # filtering for 22-24 because that is all I have data on
-team_avgs <- logs |> 
-  filter(Season >= "2022-2023") %>% 
+team_avgs <- logs |>
+  filter(Date >= "2022-10-01") %>% 
   group_by(Conference, Team) |> 
   summarise(
     FGAvg = mean(TeamFGPCT), 
@@ -283,7 +282,14 @@ zscore_with_players <- left_join(teamzscore, all_players, by = "team")
 na_teams <- zscore_with_players %>% 
   filter(is.na(int_players_23_24))
 
+#unique team ids
+teams_id <- all_players %>% 
+  distinct(team, ncaa_id)
 
+# generate unique teams from logs
+# join the names to teams_id
+# populate the NA ncaa_ids using mutate
+
+z_scores_and_ids <- left_join(zscore_with_players, teams_id, "ncaa_id" )
 
 ```
-
