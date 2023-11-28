@@ -102,7 +102,7 @@ all_players <- inner_join(all_players23_24, all_players22_23, by = "team")
 ```
 
 ```{r}
-
+# cleaning teh all_players df
 all_players <- all_players %>% 
   rename(conference = conference.x.x,
          total_23_24 = total_players.x,
@@ -110,18 +110,25 @@ all_players <- all_players %>%
          total_22_23 = total_players.y,
          int_players_22_23 = int_players.y) %>% 
 select(team, conference, int_players_23_24, int_players_22_23, total_23_24, total_22_23)
+
+# fixing NAs
+all_players <- all_players %>%
+  mutate(
+    int_players_23_24 = case_when(
+      is.na(int_players_23_24) ~ 0,
+      TRUE ~ int_players_23_24),
+    int_players_22_23 = case_when(
+      is.na(int_players_22_23) ~ 0,
+      TRUE ~ int_players_22_23))
 ```
-
-
-# Everything below this was done before I discovered the discrepency. So everything above is what is needed to form the all_players dataframe. 
 
 adding in percentages
 ```{r}
 # Percentage change doesn't show anything interesting here. Percentages does.
 
 all_players <- all_players %>% 
-  mutate(int_player_perc_23_24 = int_players_23_24/total_players_23_24*100,
-         int_player_perc_22_23 = int_players_22_23/total_players_22_23*100,
+  mutate(int_player_perc_23_24 = int_players_23_24/total_23_24*100,
+         int_player_perc_22_23 = int_players_22_23/total_22_23*100,
          int_perc_change = (int_players_23_24-int_players_22_23)/int_players_22_23)
 ```
 
