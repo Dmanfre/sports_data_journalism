@@ -241,9 +241,10 @@ I updated the countries in 22-23 to match 23-24. There were only two that needed
 # I need the updated logs to include more games from this season
 
 South Florida has the most international players in 23-24 so let's do a dive into them over the last season to now.
-```{r}
 
-sf_22_24 <- logs18_24 %>% 
+```{r}
+# South Florida last season and this season
+sf_22_24 <- logs %>% 
   filter(TeamFull == "South Florida Bulls", Season >= "2022-2023") 
 
 ```
@@ -281,6 +282,8 @@ zscore_with_players <- left_join(teamzscore, all_players, by = "team")
 # 64 na teams missing here. 
 na_teams <- zscore_with_players %>% 
   filter(is.na(int_players_23_24))
+
+
 
 ```
 

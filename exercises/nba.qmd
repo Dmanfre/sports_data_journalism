@@ -1,0 +1,35 @@
+```{r}
+#install.packages("hoopR")
+library(hoopR)
+library(tidyverse)
+
+options(scipen=999)
+```
+NYK team ID 1610612752
+```{r}
+lineups <-  nba_teamdashlineups(team_id = 1610612752)[[2]]
+```
+
+changing the col formats
+```{r}
+
+lineups <- lineups %>% 
+  mutate(across(starts_with("GP"):ncol(lineups), as.numeric))
+
+```
+
+```{r}
+lineups %>%
+  filter(str_detect(GROUP_NAME, "Hartenstein")) %>% 
+  filter(MIN != 0) %>% 
+  select(GROUP_NAME, GP, MIN, PLUS_MINUS) %>% 
+  arrange(desc(MIN))
+  
+```
+
+Isaiah Hartenstein has been one of the iron men for the Knicks appearing in 82 games in 2022-23. When he's in the lineup the Knicks' highest plus/minus was a +19. Its lowest was a -12 but there has only been three games with that lineup as opposed to 10 with the highest plus/minus lineup.
+
+Its a mix of bench players and starters there and so far they've played 84 minutes together which is nearly 50 minutes more than the second most-played lineup. My main point is that when Hartenstein is in the lineup, the Knicks. 
+
+
+
