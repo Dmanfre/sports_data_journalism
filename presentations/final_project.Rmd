@@ -182,14 +182,6 @@ all_players_categories %>%
   summarize(number_of_teams = n())
 ```
 
-Question: How many teams have each number of players? 74 teams have 14 players, 72 teams have 15 players. There are 22 teams who have 12 players and the same number of teams have 16 players.
-
-```{r}
-all_players %>% 
-  group_by(total_players) %>% 
-  summarize(count = n())
-```
-
 Where do players on certain teams come from?
 Change the name of the team in the filter to see any team you want.
 ```{r}
@@ -305,9 +297,9 @@ categories_22_23 <- team_categories_22_23 %>%
 Analysis: There were 13 more teams in 2023-24 with 5-10 international players than in 22-23. 
 
 ```{r}
-total_categories <- total_by_conf <- inner_join(categories_23_24, categories_22_23, by = "int_players_categories")
+total_by_category <- inner_join(categories_23_24, categories_22_23, by = "int_players_categories")
 
-total_categories <- total_categories %>%
+total_by_category <- total_by_category %>%
   rename(teams_23_24 = number_of_teams.x,
          teams_22_23 = number_of_teams.y) %>% 
   mutate(diff = teams_23_24 - teams_22_23,
@@ -316,7 +308,7 @@ total_categories <- total_categories %>%
         perc_22_23 = teams_22_23/sum(teams_22_23)*100,
         perc_change = (perc_23_24-perc_22_23)/(perc_22_23)*100)
 
-head(total_categories)
+head(total_by_category)
 ```
 
 Analysis: `Austraulia had the third most players in 23-24 but its down 23 players from a seaosn ago, which is 18%. Spain on the other hand, gained 24 new players.`
@@ -377,7 +369,8 @@ team_avgs <- logs18_24 |>
     ReboundAvg = mean(TeamTotalRebounds), 
     OppFGAvg = mean(OpponentFGPCT),
     OffRebAvg = mean(OpponentTotalRebounds)
-    ) 
+    ) %>% 
+  rename(team = Team)
 
 #Z scores
 teamzscore <- team_avgs |> 
@@ -387,21 +380,19 @@ teamzscore <- team_avgs |>
     OppZscore = as.numeric(scale(OppFGAvg, center = TRUE, scale = TRUE)) * -1,
     OppRebZScore = as.numeric(scale(OffRebAvg, center = TRUE, scale = TRUE)) * -1,
     TotalZscore = FGzscore + RebZscore + OppZscore + OppRebZScore
-  ) %>% 
-  rename(team = Team)
+  ) 
 
 #adding the number of international players
 
-teamzscore <- inner_join(teamzscore, teams_total, by = "team") 
+zscore_with_players <- left_join(teamzscore, teams_total, by = "team") 
 
-# I think this is removing some teams? I only have 219 rows when team avg shows 377 teams.
+# I think this join is removing some teams? I only have 219 rows when team avg shows 377 teams.
 
 ```
 
 
+```{r}
 
 
-
-
-
+```
 
