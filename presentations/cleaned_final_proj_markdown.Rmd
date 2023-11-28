@@ -25,7 +25,6 @@ logs <- logs18_24 %>%
 # Loading player data from 2022-2023
 wbb23_24_rosters <- read_csv("data/wbb_rosters_2023_24.csv")
 wbb22_23_rosters <- read_csv("data/wbb_rosters_2022_23.csv")
-
 ```
 
 The countries that need to be cleaned are "The Netherlands and BOSNIA AND HERZEGOVINA"
@@ -59,26 +58,26 @@ createing teams datafraems
 ```{r}
 #23-24
 teams_with_int_players_23_24 <- non_us_23_24 %>% 
-  group_by(team, conference) %>% 
+  group_by(ncaa_id, team, conference) %>% 
   summarize(int_players = n()) %>% 
   arrange(desc(int_players))
 
 #22-23
 teams_with_int_players_22_23 <- non_us_22_23 %>% 
-  group_by(team, conference) %>% 
+  group_by(ncaa_id, team, conference) %>% 
   summarize(int_players = n()) %>% 
   arrange(desc(int_players))
 
 # total players
 total_player_23_24 <-  wbb23_24_rosters %>% 
   filter(division == "I") %>% 
-  group_by(team, conference) %>% 
+  group_by(ncaa_id, team, conference) %>% 
   summarize(total_players = n()) %>% 
   arrange((team))
 
 total_player_22_23 <- wbb22_23_rosters %>% 
   filter(division == "I") %>% 
-  group_by(team, conference) %>% 
+  group_by(ncaa_id, team, conference) %>% 
   summarize(total_players = n()) %>% 
   arrange((team))
 
@@ -86,30 +85,31 @@ total_player_22_23 <- wbb22_23_rosters %>%
 list <- anti_join (total_player_22_23, total_player_23_24, by= "team")
 ```
 
-
 # need to figure out a new way to get a clean version of all players.
 
 # I need to do the left joins in seperate years and then do the mutates for the NA values, then inner joins back together. 
 
 ```{r}
  
-all_players23_24 <- left_join(total_player_23_24, teams_with_int_players_23_24, by = "team", "conference")
+all_players23_24 <- left_join(total_player_23_24, teams_with_int_players_23_24, by = "ncaa_id")
 
-all_players22_23 <- left_join(total_player_22_23, teams_with_int_players_22_23, by = "team", "confernece")
+all_players22_23 <- left_join(total_player_22_23, teams_with_int_players_22_23, by = "ncaa_id")
 
-all_players <- inner_join(all_players23_24, all_players22_23, by = "team")
+all_players <- inner_join(all_players23_24, all_players22_23, by = "ncaa_id")
 
 ```
+
 
 ```{r}
 # cleaning teh all_players df
 all_players <- all_players %>% 
-  rename(conference = conference.x.x,
+  rename(team = team.x.x,
+         conference = conference.x.x,
          total_23_24 = total_players.x,
          int_players_23_24 = int_players.x,
          total_22_23 = total_players.y,
          int_players_22_23 = int_players.y) %>% 
-select(team, conference, int_players_23_24, int_players_22_23, total_23_24, total_22_23)
+select(ncaa_id, team, conference, int_players_23_24, int_players_22_23, total_23_24, total_22_23, -team.y.x, -team.y.x, -team.x.y, -team.y.y)
 
 # fixing NAs
 all_players <- all_players %>%
@@ -127,7 +127,8 @@ adding in percentages
 # Percentage change doesn't show anything interesting here. Percentages does.
 
 all_players <- all_players %>% 
-  mutate(int_player_perc_23_24 = int_players_23_24/total_23_24*100,
+  mutate(int_diff = int_players_23_24 - int_players_22_23,
+         int_player_perc_23_24 = int_players_23_24/total_23_24*100,
          int_player_perc_22_23 = int_players_22_23/total_22_23*100)
 ```
 
@@ -282,5 +283,4 @@ na_teams <- zscore_with_players %>%
   filter(is.na(int_players_23_24))
 
 ```
-
 
