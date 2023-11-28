@@ -89,7 +89,7 @@ list <- anti_join (total_player_22_23, total_player_23_24, by= "team")
 
 # need to figure out a new way to get a clean version of all players.
 
-# I need to do the anti joins in seperate years and then do the mutates for the NA values, then inner joins back together. 
+# I need to do the left joins in seperate years and then do the mutates for the NA values, then inner joins back together. 
 
 ```{r}
  
@@ -128,8 +128,7 @@ adding in percentages
 
 all_players <- all_players %>% 
   mutate(int_player_perc_23_24 = int_players_23_24/total_23_24*100,
-         int_player_perc_22_23 = int_players_22_23/total_22_23*100,
-         int_perc_change = (int_players_23_24-int_players_22_23)/int_players_22_23)
+         int_player_perc_22_23 = int_players_22_23/total_22_23*100)
 ```
 
 player count categories
@@ -164,25 +163,124 @@ Here I will answer the obvious outstanding questions and try to formulate a stor
 
 Which conference has most players
 ```{r}
+# totals per conf
+conf_counts23_24 <- wbb23_24_rosters %>% 
+  filter(division == "I") %>% 
+  group_by(conference) %>% 
+  summarize(players_23_24 = n())
+  
+  conf_counts_22_23 <- wbb22_23_rosters %>% 
+  filter(division == "I") %>% 
+  group_by(conference) %>% 
+  summarize(players_22_23 = n())
+  
+  total_conf <- inner_join(conf_counts23_24, conf_counts_22_23, by = "conference")
+  
+  #internationals
 by_conf <- all_players %>% 
   group_by(conference) %>% 
   summarise(int_players_23_24 = sum(int_players_23_24),
-            int_players_22_23 = sum(int_players_22_23)) %>% 
-  mutate(conf_int_perc_23_24 = int_players_23_24/sum(int_players_23_24)*100,
+            int_players_22_23 = sum(int_players_22_23))
+#joining
+all_conf <- inner_join(by_conf, total_conf, by="conference")
+
+all_conf <- all_conf %>%  
+  mutate(diff= int_players_23_24 - int_players_22_23,
+         conf_perc_23_24 = int_players_23_24/sum(int_players_23_24)*100,
          conf_int_perc_22_23 = int_players_22_23/sum(int_players_22_23)*100)
 
-# Filtering for the conference allowes you to see a team's percentage of the conferences international players.
+# Filtering for the conference allows you to see a team's percentage of the conferences international players.
 all_players %>%
   filter(conference == "AAC") %>% 
   summarise(total_int_players = sum(int_players_23_24)) %>% 
   mutate(team_perc_of_conf = total_int_players/sum(total_int_players)*100) %>% 
   arrange(desc(total_int_players))
+```
 
-teams_with_int_players_23_24 %>%
-  filter(conference == "AAC")
+which countries produce the most players
+```{r}
+#23-24
+countries_23_24 <- non_us_23_24 %>% 
+    group_by(country_clean) %>% 
+  summarize(int_players = n()) %>% 
+  arrange(desc(int_players))
+
+#22-23
+countries_22_23 <- non_us_22_23 %>% 
+    group_by(country_clean) %>% 
+  summarize(int_players = n()) %>% 
+  arrange(desc(int_players))
+
+# joining
+total_country <- inner_join(countries_23_24, countries_22_23, by = "country_clean")
+
+total_country <- total_country %>% 
+  rename(int_players_23_24 = int_players.x,
+         int_players_22_23 = int_players.y) %>% 
+  mutate(diff = int_players_23_24 - int_players_22_23,
+         perc_23_24 = int_players_23_24/sum(int_players_23_24)*100,
+         perc_22_23 = int_players_22_23/sum(int_players_22_23)*100,
+  perc_change = ((int_players_23_24 - int_players_22_23) / int_players_22_23) * 100)
 ```
 
 
+--------- Second Presentation Progress Update Nov. 18, 2023 -------
 
+The central question I want to answer is do teams with higher amounts of international players preform better than those with fewer international players. What I've done so far is create dfs to answer the obvious questions of "Which teams, conferences, countries, have the most international players in Division I basketball?" I also generated percentages of non-us players on each team and I want to make that a focal point of my analysis too. The teams with majority international players are ones I'd like to focus on more in-depth. These could be the teams with five or more international players, which, according to the code I wrote, is 52 teams. I chose to break it up by 15 and 10 because most teams have between 12 to 15 total players on their roster.
+
+My next task will be to create comparisons to the previous year's data 2022-2023 to see if the number of international players grew or not? If so, by how much. Essentially, I'm running all the above codes to answer those same questions but with last season's data. I'll need to be intentional and careful in my joins so that I know what is what. Then, my task will be to tackle how to measure the performances of the teams. Another question would be do I also do a player analysis? Say I get player stats from the `wehoops` database. How would I mark certain players as internationals. I have not yet looked at this so I don't know if it gives player bio information along with stats.
+
+The issues I've run into are about thinking beyond the obvious questions. I know the ways I can expand this, but figuring out which would best serve my analysis and get me closer to the central answer of my question is where one issue lies. This is something we could talk through to see if I'm missing any of the obvious questions I need to answer that could point me in the right direction of what type of expansion would best serve me.
+
+
+_______ Progress after Second Update ---------
+
+I updated the countries in 22-23 to match 23-24. There were only two that needed to be changed. This can be the section were I see if the teams with more international players do better than those who don't.
+
+# I need the updated logs to include more games from this season
+
+South Florida has the most international players in 23-24 so let's do a dive into them over the last season to now.
+```{r}
+
+sf_22_24 <- logs18_24 %>% 
+  filter(TeamFull == "South Florida Bulls", Season >= "2022-2023") 
+
+```
+z scores
+```{r}
+#averages
+# filtering for 22-24 because that is all I have data on
+team_avgs <- logs |> 
+  filter(Season >= "2022-2023") %>% 
+  group_by(Conference, Team) |> 
+  summarise(
+    FGAvg = mean(TeamFGPCT), 
+    ReboundAvg = mean(TeamTotalRebounds), 
+    OppFGAvg = mean(OpponentFGPCT),
+    OffRebAvg = mean(OpponentTotalRebounds)
+    ) %>% 
+  rename(team = Team)
+
+#Z scores
+teamzscore <- team_avgs |> 
+  mutate(
+    FGzscore = as.numeric(scale(FGAvg, center = TRUE, scale = TRUE)),
+    RebZscore = as.numeric(scale(ReboundAvg, center = TRUE, scale = TRUE)),
+    OppZscore = as.numeric(scale(OppFGAvg, center = TRUE, scale = TRUE)) * -1,
+    OppRebZScore = as.numeric(scale(OffRebAvg, center = TRUE, scale = TRUE)) * -1,
+    TotalZscore = FGzscore + RebZscore + OppZscore + OppRebZScore
+  ) 
+
+#adding the number of international players
+
+zscore_with_players <- left_join(teamzscore, all_players, by = "team") 
+
+# the join shows 379 teams. but all players has 359 even though it should be 360.
+
+# 64 na teams missing here. 
+na_teams <- zscore_with_players %>% 
+  filter(is.na(int_players_23_24))
+
+```
 
 
