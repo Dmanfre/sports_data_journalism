@@ -171,10 +171,10 @@ Ask Iowa women's basketball head coach Lisa Bluder, and she'd agree with Brenda 
 ```{r}
 #only power 5 ators
 p5_conf <- ator_only %>%
-  filter(winning_conference %in% power_5) %>% 
-  group_by(winning_conference) %>% 
+  filter(Conference %in% power_5) %>% 
+  group_by(Conference) %>% 
   summarise(count = n(), 
-            avg_winning_ator = mean(winning_ator))
+            team_ator = mean(team_ator))
 
 ```
 It's a close race but teams in the Big Ten had the highest ator last season. The Pac-12 had the second highest but not by much. There are many talented guards in the Big 12 and this is something I can look further into later on. I'm curious if there would be any centers who had a particularly high ator or non-guards.

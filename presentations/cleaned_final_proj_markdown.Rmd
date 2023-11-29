@@ -287,8 +287,19 @@ teams_id <- all_players %>%
   distinct(team, ncaa_id)
 
 # generate unique teams from logs
+
+unique_teams <- logs %>% 
+  distinct(TeamFull) %>% 
+  rename(team = TeamFull)
+
 # join the names to teams_id
+# first try I did this, the team_ids did not go over. 
+teams_and_ids <- left_join(unique_teams, teams_id, by ="team")
+
 # populate the NA ncaa_ids using mutate
+
+
+
 
 z_scores_and_ids <- left_join(zscore_with_players, teams_id, "ncaa_id" )
 
