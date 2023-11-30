@@ -11,6 +11,7 @@ library(tidyverse)
 install.packages("ggbeeswarm")
 library(ggbeeswarm)
 library(ggrepel)
+library(ggalt)
 set.seed(1234)
 ```
 
@@ -73,7 +74,6 @@ simulations <- rbinom(n = 1000, size = 17, prob = .465)
 table(simulations)
 ```
 
-
 Beesworm plots form Oct. 25 lesson
 
 ```{r}
@@ -91,6 +91,7 @@ activeplayers <- activeplayers |> mutate(tspct=pts/(2*(fga+0.44*fta)))
 focusing on players who shoot a lot
 
 Summary calculates quartiles
+
 ```{r}
 summary(activeplayers$fga)
 ```
@@ -100,9 +101,11 @@ shooters <- activeplayers |> filter(fga > 187)
 ```
 
 making the beesworm plot
+
 ```{r}
 ggplot() + geom_beeswarm(data=shooters, aes(x=position, y=tspct), color="grey")
 ```
+
 ```{r}
 umd <- activeplayers |> 
   filter(team == "Maryland") |> 
@@ -136,7 +139,9 @@ ggplot() +
     data=umd, 
     aes(x=position, y=tspct, label=player))
 ```
+
 geom quasi random
+
 ```{r}
 ggplot() + 
   geom_quasirandom(
@@ -151,7 +156,9 @@ ggplot() +
     data=umd, 
     aes(x=position, y=tspct, label=player))
 ```
+
 using geom_jitter
+
 ```{r}
 ggplot() + 
   geom_jitter(
@@ -164,5 +171,58 @@ ggplot() +
     data=umd, 
     aes(x=position, y=tspct, label=player))
 ```
+
+
+
+Class from Nov. 30 using text annotations with graphs
+
+```{r}
+players <- read_csv("https://raw.githubusercontent.com/dwillis/hhs-snapshots/main/data/player_totals_20231130.csv") %>% 
+  filter(mp >0 )
+
+ggplot() + geom_point(data=players, aes(x=mp, y=pts))
+
+topscorers <- players |> filter(pts > 175)
+
+ggplot() + 
+  geom_point(data=players, aes(x=mp, y=pts), color="grey") +
+  geom_point(data=topscorers, aes(x=mp, y=pts), color="black")
+
+ggplot() + 
+  geom_point(data=players, aes(x=mp, y=pts), color="grey") + 
+  geom_point(data=topscorers, aes(x=mp, y=pts), color="black") + 
+  geom_encircle(data=topscorers, aes(x=mp, y=pts), s_shape=0, expand=0, colour="red")
+
+ggplot() + 
+  geom_point(data=players, aes(x=mp, y=pts), color="grey") + 
+  geom_point(data=topscorers, aes(x=mp, y=pts), color="black") + 
+  geom_text(data=topscorers, aes(x=mp, y=pts, label=full_name), hjust = 0, vjust=1) +
+  geom_encircle(data=topscorers, aes(x=mp, y=pts), s_shape=.5, expand=.03, colour="red")
+
+ggplot() + 
+  geom_point(data=players, aes(x=mp, y=pts), color="grey") + 
+  geom_point(data=topscorers, aes(x=mp, y=pts), color="black") + 
+  geom_encircle(data=topscorers, aes(x=mp, y=pts), s_shape=.5, expand=.03, colour="red") +
+  geom_text(aes(x=275, y=275, label="Top scorers")) + 
+  labs(title="Caitlin Clark Alone At Top", subtitle="The Iowa star is by far the top scorer among all NCAA players", x="Minutes", y="Points") + 
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    )
+
+clark <- topscorers %>% 
+  filter(full_name == "Caitlin Clark")
+
+```
+
+
+
+
+
+
+
 
 
