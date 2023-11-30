@@ -199,9 +199,10 @@ ggplot() +
   geom_text(data=topscorers, aes(x=mp, y=pts, label=full_name), hjust = 0, vjust=1) +
   geom_encircle(data=topscorers, aes(x=mp, y=pts), s_shape=.5, expand=.03, colour="red")
 
-ggplot() + 
+plot <- ggplot() + 
   geom_point(data=players, aes(x=mp, y=pts), color="grey") + 
-  geom_point(data=topscorers, aes(x=mp, y=pts), color="black") + 
+  geom_point(data=topscorers, aes(x=mp, y=pts), color="black") +
+  geom_point(data=clark, aes(x=mp, y=pts), color="yellow") +
   geom_encircle(data=topscorers, aes(x=mp, y=pts), s_shape=.5, expand=.03, colour="red") +
   geom_text(aes(x=275, y=275, label="Top scorers")) + 
   labs(title="Caitlin Clark Alone At Top", subtitle="The Iowa star is by far the top scorer among all NCAA players", x="Minutes", y="Points") + 
