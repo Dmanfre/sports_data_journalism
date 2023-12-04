@@ -102,13 +102,13 @@ all_players <- inner_join(all_players23_24, all_players22_23, by = "ncaa_id")
 ```{r}
 # cleaning teh all_players df
 all_players <- all_players %>% 
-  rename(team = team.x,
+  rename(team = team.x.x,
          conference = conference.x.x,
          total_23_24 = total_players.x,
          int_players_23_24 = int_players.x,
          total_22_23 = total_players.y,
          int_players_22_23 = int_players.y) %>% 
-select(ncaa_id, team, conference, int_players_23_24, int_players_22_23, total_23_24, total_22_23, -team.y.x, -team.y.x, -team.y, -team.y.y)
+select(ncaa_id, team, conference, int_players_23_24, int_players_22_23, total_23_24, total_22_23, -team.y.x, -team.y.y, -team.y.y)
 
 # fixing NAs
 all_players <- all_players %>%
@@ -307,7 +307,7 @@ z_scores_and_ids <- left_join(zscore_with_players, teams_id, "ncaa_id" )
 # 63 teams that don't have ids
 na_teams <- z_scores_and_ids %>% 
   filter(is.na(ncaa_id)) %>%
-  select(team, ncaa_id)
+  select(team.x, ncaa_id)
   
 # need to do a big case when to populate the missing ids.
   
@@ -380,8 +380,8 @@ teams_no_ids <- teams_no_ids %>%
   mutate(ncaa_id = as.numeric(ncaa_id))
 
 ids <- z_scores_and_ids %>% 
-  select(team,  ncaa_id) %>% 
-  rename(Team = team)
+  select(team.x,  ncaa_id) %>% 
+  rename(Team = team.x)
 
 # now all of the schools have ids in them. 
 ```
@@ -409,7 +409,46 @@ all_logs <- bind_rows(logs_with_matches, logs_with_ids)
 
 now i can do the z score stuff on all_logs 
 
+```{r}
+new_team_avgs <- all_logs |>
+  filter(Date >= "2022-10-01") %>% 
+  group_by(Conference, Team, ncaa_id) |> 
+  summarise(
+    FGAvg = mean(TeamFGPCT), 
+    ReboundAvg = mean(TeamTotalRebounds), 
+    OppFGAvg = mean(OpponentFGPCT),
+    OffRebAvg = mean(OpponentTotalRebounds)
+    ) %>% 
+  rename(team = Team)
 
+#Z scores
+new_teamzscore <- new_team_avgs |> 
+  mutate(
+    FGzscore = as.numeric(scale(FGAvg, center = TRUE, scale = TRUE)),
+    RebZscore = as.numeric(scale(ReboundAvg, center = TRUE, scale = TRUE)),
+    OppZscore = as.numeric(scale(OppFGAvg, center = TRUE, scale = TRUE)) * -1,
+    OppRebZScore = as.numeric(scale(OffRebAvg, center = TRUE, scale = TRUE)) * -1,
+    TotalZscore = FGzscore + RebZscore + OppZscore + OppRebZScore
+  )  
+
+# When I run this, it produces NaN = not a number. 
+```
+
+joining
+
+```{r}
+players_zscores <- inner_join(new_teamzscore, all_players, by = "ncaa_id")
+```
+
+
+
+----------- Third update Dec. 3, 2023 ---------------
+
+In this update, I was able to join my international player data to my game logs which was a struggle. I began calculating team averages and then z-scores so I can see if teams with a certain number of international players did better than ones with fewer international players.
+
+However, when I ran the code to calculate z-scores, it produced NaN (Not a number) and after some research, I found online that this could be because there was a divide by 0 somewhere in the data. Finding that is what would be my next step and actually getting the z scores is what is essential to my overall question. Fixing the NaN is something we could work on figuring out how to do or maybe you could help guide me in a direction so I could figure it out myself. Of course, in a story, I would write around saying the phrase z-score obviously but I need to see how team's like South Florida which has 12 international players fares in a z-score analysis. Another question I had in this process is what US state gets the most international players? I haven't written the code yet for this question but can do it after this update because it would be good to know.
+
+Visualizing the data would be done using stacked bar charts and maps. There could be two bars for each team. One with the number of international players and anther with their total players. Another choice would be a heat map of the countries represented.
 
 
 
