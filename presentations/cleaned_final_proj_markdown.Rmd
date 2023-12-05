@@ -26,8 +26,8 @@ wbb23_24_rosters <- read_csv("data/wbb_rosters_2023_24.csv")
 wbb22_23_rosters <- read_csv("data/wbb_rosters_2022_23.csv")
 ```
 
-The countries that need to be cleaned are "The Netherlands and BOSNIA AND HERZEGOVINA"
-NOTE: I replaced the 23_24 file with the one Derek updated: this is a link to the file. https://github.com/Sports-Roster-Data/womens-college-basketball/blob/main/wbb_rosters_2023_24.csv
+The countries that need to be cleaned are "The Netherlands and BOSNIA AND HERZEGOVINA" NOTE: I replaced the 23_24 file with the one Derek updated: this is a link to the file. <https://github.com/Sports-Roster-Data/womens-college-basketball/blob/main/wbb_rosters_2023_24.csv>
+
 ```{r}
 wbb22_23_rosters <- wbb22_23_rosters %>% 
   mutate(
@@ -38,11 +38,13 @@ wbb22_23_rosters <- wbb22_23_rosters %>%
 ```
 
 Creating power 5 list
+
 ```{r}
 power_5 <- c("ACC", "Big 12", "Big Ten", "Pac-12", "SEC")
 ```
 
 Filtering for non us players
+
 ```{r}
 non_us_22_23 <- wbb22_23_rosters %>%
 filter(country_clean != "USA", division == "I")
@@ -51,9 +53,10 @@ non_us_23_24 <-  wbb23_24_rosters %>%
   filter(country_clean != "USA", division == "I")
 ```
 
-What I want to do here is answer the obvious questions and generate dfs for each question showing the 22-23, the 23-24, diffs and percentage changes. 
+What I want to do here is answer the obvious questions and generate dfs for each question showing the 22-23, the 23-24, diffs and percentage changes.
 
 createing teams datafraems
+
 ```{r}
 #23-24
 teams_with_int_players_23_24 <- non_us_23_24 %>% 
@@ -86,7 +89,7 @@ list <- anti_join (total_player_22_23, total_player_23_24, by= "team")
 
 # need to figure out a new way to get a clean version of all players.
 
-# I need to do the left joins in seperate years and then do the mutates for the NA values, then inner joins back together. 
+# I need to do the left joins in seperate years and then do the mutates for the NA values, then inner joins back together.
 
 ```{r}
  
@@ -97,7 +100,6 @@ all_players22_23 <- left_join(total_player_22_23, teams_with_int_players_22_23, 
 all_players <- inner_join(all_players23_24, all_players22_23, by = "ncaa_id")
 
 ```
-
 
 ```{r}
 # cleaning teh all_players df
@@ -122,6 +124,7 @@ all_players <- all_players %>%
 ```
 
 adding in percentages
+
 ```{r}
 # Percentage change doesn't show anything interesting here. Percentages does.
 
@@ -132,6 +135,7 @@ all_players <- all_players %>%
 ```
 
 player count categories
+
 ```{r}
 all_players_categories <- all_players %>%
   mutate(
@@ -145,7 +149,8 @@ all_players_categories <- all_players %>%
         int_players_23_24 > 10 ~ "Greater than 10 players"))
 ```
 
- Category counts
+Category counts
+
 ```{r}
 categories_23_24 <- all_players_categories %>% 
   group_by(category_23_24 ) %>% 
@@ -156,12 +161,12 @@ categories_22_23 <- all_players_categories %>%
   summarize(number_of_teams = n())
 ```
 
-
 ------- Data Exploration Section -----------
 
 Here I will answer the obvious outstanding questions and try to formulate a story narrative after it.
 
 Which conference has most players
+
 ```{r}
 # totals per conf
 conf_counts23_24 <- wbb23_24_rosters %>% 
@@ -198,6 +203,7 @@ all_players %>%
 ```
 
 which countries produce the most players
+
 ```{r}
 #23-24
 countries_23_24 <- non_us_23_24 %>% 
@@ -223,7 +229,6 @@ total_country <- total_country %>%
   perc_change = ((int_players_23_24 - int_players_22_23) / int_players_22_23) * 100)
 ```
 
-
 --------- Second Presentation Progress Update Nov. 18, 2023 -------
 
 The central question I want to answer is do teams with higher amounts of international players preform better than those with fewer international players. What I've done so far is create dfs to answer the obvious questions of "Which teams, conferences, countries, have the most international players in Division I basketball?" I also generated percentages of non-us players on each team and I want to make that a focal point of my analysis too. The teams with majority international players are ones I'd like to focus on more in-depth. These could be the teams with five or more international players, which, according to the code I wrote, is 52 teams. I chose to break it up by 15 and 10 because most teams have between 12 to 15 total players on their roster.
@@ -232,8 +237,7 @@ My next task will be to create comparisons to the previous year's data 2022-2023
 
 The issues I've run into are about thinking beyond the obvious questions. I know the ways I can expand this, but figuring out which would best serve my analysis and get me closer to the central answer of my question is where one issue lies. This is something we could talk through to see if I'm missing any of the obvious questions I need to answer that could point me in the right direction of what type of expansion would best serve me.
 
-
-_______ Progress after Second Update ---------
+------ Progress after Second Update ---------
 
 I updated the countries in 22-23 to match 23-24. There were only two that needed to be changed. This can be the section were I see if the teams with more international players do better than those who don't.
 
@@ -247,7 +251,9 @@ sf_22_24 <- logs %>%
   filter(TeamFull == "South Florida Bulls", Season >= "2022-2023") 
 
 ```
+
 z scores
+
 ```{r}
 #averages
 # filtering for 22-24 because that is all I have data on
@@ -274,6 +280,7 @@ teamzscore <- team_avgs |>
 ```
 
 joining with team ids
+
 ```{r}
 #adding the number of international players
 
@@ -301,7 +308,6 @@ teams_no_ids <- anti_join(unique_teams, teams_id, by = "team")
 
 z_scores_and_ids <- left_join(zscore_with_players, teams_id, "ncaa_id" )
 ```
-
 
 ```{r}
 # 63 teams that don't have ids
@@ -386,7 +392,6 @@ ids <- z_scores_and_ids %>%
 # now all of the schools have ids in them. 
 ```
 
-
 ```{r}
 # Now, you can perform the inner join
 
@@ -405,14 +410,14 @@ all_logs <- bind_rows(logs_with_matches, logs_with_ids)
 
 ```
 
+now i can do the z score stuff on all_logs
 
 
-now i can do the z score stuff on all_logs 
 
 ```{r}
 new_team_avgs <- all_logs |>
   filter(Date >= "2022-10-01") %>% 
-  group_by(Conference, Team, ncaa_id) |> 
+  group_by(Team, ncaa_id) |> 
   summarise(
     FGAvg = mean(TeamFGPCT), 
     ReboundAvg = mean(TeamTotalRebounds), 
@@ -421,15 +426,23 @@ new_team_avgs <- all_logs |>
     ) %>% 
   rename(team = Team)
 
-#Z scores
+FGAvg_mean <- mean(new_team_avgs$FGAvg, na.rm = TRUE)
+FGAvg_sd <- sd(new_team_avgs$FGAvg, na.rm = TRUE)
+ReboundAvg_mean <- mean(new_team_avgs$ReboundAvg, na.rm = TRUE)
+ReboundAvg_sd <- sd(new_team_avgs$ReboundAvg, na.rm = TRUE)
+OppFGAvg_mean <- mean(new_team_avgs$OppFGAvg, na.rm = TRUE)
+OppFGAvg_sd <- sd(new_team_avgs$OppFGAvg, na.rm = TRUE)
+OffRebAvg_mean <- mean(new_team_avgs$OffRebAvg, na.rm = TRUE)
+OffRebAvg_sd <- sd(new_team_avgs$OffRebAvg, na.rm = TRUE)
+
+# Apply z-score calculation in mutate
 new_teamzscore <- new_team_avgs |> 
   mutate(
-    FGzscore = as.numeric(scale(FGAvg, center = TRUE, scale = TRUE)),
-    RebZscore = as.numeric(scale(ReboundAvg, center = TRUE, scale = TRUE)),
-    OppZscore = as.numeric(scale(OppFGAvg, center = TRUE, scale = TRUE)) * -1,
-    OppRebZScore = as.numeric(scale(OffRebAvg, center = TRUE, scale = TRUE)) * -1,
-    TotalZscore = FGzscore + RebZscore + OppZscore + OppRebZScore
-  )  
+FGzscore = (FGAvg - FGAvg_mean) / FGAvg_sd,
+RebZscore = (ReboundAvg - ReboundAvg_mean) / ReboundAvg_sd,
+OppZscore = ((OppFGAvg - OppFGAvg_mean) / OppFGAvg_sd) * -1,
+OppRebZScore = ((OffRebAvg - OffRebAvg_mean) / OffRebAvg_sd) * -1,
+TotalZscore = FGzscore + RebZscore + OppZscore + OppRebZScore)  
 
 # When I run this, it produces NaN = not a number. 
 ```
@@ -440,8 +453,6 @@ joining
 players_zscores <- inner_join(new_teamzscore, all_players, by = "ncaa_id")
 ```
 
-
-
 ----------- Third update Dec. 3, 2023 ---------------
 
 In this update, I was able to join my international player data to my game logs which was a struggle. I began calculating team averages and then z-scores so I can see if teams with a certain number of international players did better than ones with fewer international players.
@@ -449,6 +460,17 @@ In this update, I was able to join my international player data to my game logs 
 However, when I ran the code to calculate z-scores, it produced NaN (Not a number) and after some research, I found online that this could be because there was a divide by 0 somewhere in the data. Finding that is what would be my next step and actually getting the z scores is what is essential to my overall question. Fixing the NaN is something we could work on figuring out how to do or maybe you could help guide me in a direction so I could figure it out myself. Of course, in a story, I would write around saying the phrase z-score obviously but I need to see how team's like South Florida which has 12 international players fares in a z-score analysis. Another question I had in this process is what US state gets the most international players? I haven't written the code yet for this question but can do it after this update because it would be good to know.
 
 Visualizing the data would be done using stacked bar charts and maps. There could be two bars for each team. One with the number of international players and anther with their total players. Another choice would be a heat map of the countries represented.
+
+--------- Progress after third update ---------------
+
+
+```{r}
+subset <- players_zscores %>% 
+  select(team.x, ncaa_id, conference, TotalZscore, int_players_23_24, int_players_22_23) %>%
+  arrange(desc(TotalZscore))
+```
+
+The best teams in WBB don't have high numbers of international players. South Carolina is so high above the median.
 
 
 
