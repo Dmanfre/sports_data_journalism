@@ -10,6 +10,9 @@ library(usdata)
 library(rvest)
 library(ggplot2)
 library(ggalt)
+#install.packages("ggtext")
+library(ggtext)
+library(htmltools)
 ```
 
 ```{r}
@@ -171,12 +174,12 @@ Which conference has most players
 
 ```{r}
 # totals per conf
-conf_counts23_24 <- wbb23_24_rosters %>% 
+conf_counts23_24 <- non_us_23_24 %>% 
   filter(division == "I") %>% 
   group_by(conference) %>% 
   summarize(players_23_24 = n())
   
-  conf_counts_22_23 <- wbb22_23_rosters %>% 
+  conf_counts_22_23 <- non_us_22_23 %>% 
   filter(division == "I") %>% 
   group_by(conference) %>% 
   summarize(players_22_23 = n())
@@ -512,28 +515,27 @@ position_by_country_22_23 <- non_us_22_23 %>%
 # .x = 23-24 .y=22-23
 total_position_by_country <- inner_join(position_by_country_23_24, position_by_country_22_23, by = "country_clean")
 
-new_col_names <- c("Country", "F_23_24", "C_23_24", "G_23_24", "G_F_23_24", "F_22_23", "C_22_23", "G_22_23", "G_F_22_23")
-
-#ChatGPT showed this backwards and I was curious why
-colnames(total_position_by_country) <- new_col_names
-
-#Columns 11-13 were blank and duplicates
 total_position_by_country <- total_position_by_country %>% 
-  select(-c(10:13))
+  rename(C_23_24 = CENTER.x,
+         C_22_23 = CENTER.y,
+         G_23_24 = GUARD.x,
+         G_22_23 = GUARD.y,
+         F_23_24 = FORWARD.x,
+         F_22_23 = FORWARD.y,
+         G_F_23_24 = `GUARD/FORWARD.x`,
+         G_F_22_23 = `GUARD/FORWARD.y`,
+         F_C_23_24 = `FORWARD/CENTER.x`,
+         F_C_22_23 = `FORWARD/CENTER.y`,
+         W_23_24 = WING.x,
+         W_22_23 = WING.y)
 
-#differences
+
+#differences 
 total_position_by_country <- total_position_by_country %>% 
 mutate(F_diff = F_23_24 - F_22_23,
        C_diff = C_23_24 - C_22_23,
        G_diff = G_23_24 - G_22_23,
        G_F_diff = G_F_23_24 - G_F_22_23)
-
-
-center_subset <- total_position_by_country %>% 
-  select(Country, C_23_24, C_22_23, C_diff) %>% 
-  head(25)
-
-
 ```
 
 
@@ -598,31 +600,86 @@ Final product would be a df with the col names as `country_clean` and the rows a
 
 ------------ Visuals -------------------------
 
-Create this based on charts of the countries dataframe and the the positions but limit it to a scope of the most interesting finds. Do dumbell charts
-
-```{r}
-#Position subset
-
-position_subset <- total_position_by_country %>% 
-  select(C_23_24, C_22_23, C_diff) %>% 
-  arrange(desc(C_diff)) %>% 
-  head(10)
-
-# making the chart
-ggplot() + 
-  geom_lollipop(
-    data=center_subset, 
-    aes(y=reorder(Country, C_diff), x=C_diff), 
-    horizontal = TRUE
-    )
-
-
-
-```
 
 
 
 ----------- Final analysis summary -------------
+
+It is clear some teams are making intentional decisions concerning their recruiting practices. South Florida has 80% of its roster this year as non-us players and 16 rosters in Division I women's college basketball have rosters that are 50% or greater international players. The change from this season to last was quite surprising across conferences, positions and countries. I took a deep look into all of those and answered the obvious. surface-level questions while takibng an in-depth look at other factors such as if teams with greater numbers of international players performed better than those who had fewer.
+
+Starting with the team breakdown in the `all_players` dataframe. This shows the amount of international players last year and this year, the difference and the percentages of each team for last year and this year. What is most surprising to me is how many teams increased in the amount of international players. Whether it was an increase of three or five, it shows that the international game is growing.
+
+When I was at Rider, I always knew many MAAC teams had international players and it has the fifth most this season with 49. Only up three from last year but that shows some degree of consistency. If I looked at more years in the repo, I could have identified a more concrete trend but looking at this season and last was the true scope of my analysis. The Big Ten was 20th on the list with 22 international players this season, down six from the prior year. I created the `all_conf` dataframe to look at this data by grouping_by conference and then counting the number of players. The percentages weren't as fruitful as they were in the `all_players` dataframe.
+
+The next thing I wanted to look at was the countries and in that section, I found that Spain, Canada and Australia produce the most non-us players. I created a codeblock where you can enter a team name and see its beakdown of where its players come from. It would be interesting to see if I could create this into a quarto doc or something publishable where readers would be able to filter by team and see the number of international players. I'm unsure of how to do that at the current time.
+
+```{r}
+non_us_23_24 %>% 
+  filter(team == "Maryland") %>% 
+  group_by(country_clean) %>% 
+  summarize(int_players = n()) %>% 
+  arrange(desc(int_players))
+```
+I found it incredibly interesting that Australia actually produced fewer players from last year to this year. It decreased by 23 players whereas Spain 22% more players in 2023-24 than the prior year. That's equal to 26 new players.
+
+```{r}
+
+country_subset <- total_country %>%
+ head(10)
+
+# making the chart
+ggplot() + 
+  geom_dumbbell(
+    data=country_subset, 
+    aes(y=reorder(country_clean, int_players_23_24), x=int_players_22_23, xend=int_players_23_24),
+    size = 2,
+    color = "grey",
+    colour_x = "red",
+    colour_xend ="blue") + 
+  theme_minimal()+
+  expand_limits(x = 200)+
+  labs(
+    title = "International women's college basketball players year over year",
+    x = "Number of players",
+    y = "Country",
+    caption = "Source: The Sports Roster Data Project at the University of Maryland | Chart by Dylan Manfre",
+    subtitle = "Two of the top three countries with most international players increased since last year.")
+  
+```
+
+
+The hardest part of the project was joining the teams and their international player counts with the z-score analysis. What I learned from this was that joinign by `ncaa_id` is better than joining by `team` because each id is unique and teams change names and/or close down. Joining taught me to be mindful of the order of my joins in that the dataframe with more rows needs to go in front than the one with fewer rows. the setup is (x,y, by="col_name"). Unfortunatly, the z-score analysis did not produce anything too interesting. It did not show that teams with more international players do better overall than the ones that have fewer. The top teams based on the categories I looked at were teams that were in the NCAA tournament. Of the top 20 teams, only South Florida had more than 10 players. Aside from that, nobody had more than 4.
+
+This leads me into another thing I looked at. Categories. I thought that the number of teams in 23-24 who had 5 to 10 international players was higher than 2022-23 by 13.
+
+Of the teams with international players, I broke it down by position to see what that comparison looks like. I found the position breakdown year over year to be quite interesting in terms of the types of players that are produced from various countries. After reworking the data and making sure the columns were correct, It was guards and forwards that were the most dominant positions among international players. Of the 65 countries listed in the `total_position_by_country` dataframe, 80 guards were from Spain this season. I found that particular dataframe harder to visualize which is why I went with the one below. 
+
+```{r}
+write_csv(total_position, "data/total_position.csv")
+
+html_code <- '<iframe src="https://datawrapper.dwcdn.net/sN2ZW/2/" width="100%" height="489" scrolling="no" frameborder="0" allowtransparency="true"></iframe>'
+
+HTML(html_code)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
