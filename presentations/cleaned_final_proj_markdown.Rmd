@@ -598,11 +598,6 @@ Final product would be a df with the col names as `country_clean` and the rows a
 ```
 
 
------------- Visuals -------------------------
-
-
-
-
 ----------- Final analysis summary -------------
 
 It is clear some teams are making intentional decisions concerning their recruiting practices. South Florida has 80% of its roster this year as non-us players and 16 rosters in Division I women's college basketball have rosters that are 50% or greater international players. The change from this season to last was quite surprising across conferences, positions and countries. I took a deep look into all of those and answered the obvious. surface-level questions while takibng an in-depth look at other factors such as if teams with greater numbers of international players performed better than those who had fewer.
