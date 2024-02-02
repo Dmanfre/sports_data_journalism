@@ -10,7 +10,7 @@ library(usdata)
 library(rvest)
 library(ggplot2)
 library(ggalt)
-#install.packages("ggtext")
+install.packages("ggtext")
 library(ggtext)
 library(htmltools)
 ```
